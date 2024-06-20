@@ -45,6 +45,11 @@ void vec2_normalize(vec2_t* v) {
 	*v = vec2_div(*v, vec2_length(*v));
 }
 
+float vec2_cross(vec2_t a, vec2_t b)
+{
+	return a.x * b.y - a.y * b.x;
+}
+
 float vec3_length(vec3_t v) {
 	return sqrtf(v.x * v.x + v.y * v.y + v.z * v.z);
 }
@@ -105,25 +110,25 @@ void vec3_normalize(vec3_t* v) {
 vec3_t vec3_rotate_x(vec3_t v, float angle) {
 	vec3_t result = {
 		v.x,
-		v.y * cos(angle) - v.z * sin(angle),
-		v.y * sin(angle) + v.z * cos(angle)
+		v.y * cosf(angle) - v.z * sinf(angle),
+		v.y * sinf(angle) + v.z * cosf(angle)
 	};
 	return result;
 }
 
 vec3_t vec3_rotate_y(vec3_t v, float angle) {
 	vec3_t result = {
-		v.x * cos(angle) - v.z * sin(angle),
+		v.x * cosf(angle) - v.z * sinf(angle),
 		v.y,
-		v.x * sin(angle) + v.z * cos(angle)
+		v.x * sinf(angle) + v.z * cosf(angle)
 	};
 	return result;
 }
 
 vec3_t vec3_rotate_z(vec3_t v, float angle) {
 	vec3_t result = {
-		v.x * cos(angle) - v.y * sin(angle),
-		v.x * sin(angle) + v.y * cos(angle),
+		v.x * cosf(angle) - v.y * sinf(angle),
+		v.x * sinf(angle) + v.y * cosf(angle),
 		v.z
 	};
 	return result;

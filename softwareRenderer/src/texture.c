@@ -1,5 +1,6 @@
 #include "texture.h"
 #include <stdio.h>
+#include "vector.h"
 
 int texture_width = 64;
 int texture_height = 64;
@@ -72,3 +73,21 @@ const uint8_t REDBRICK_TEXTURE[] = {
 };
 
 uint32_t* mesh_texture = NULL;
+
+vec3_t barycentric_weights(vec2_t a, vec2_t b, vec2_t c, vec2_t p) {
+    // We get to reuse these from the derivation
+    vec2_t ac = vec2_sub(c, a);
+    vec2_t ab = vec2_sub(b, a);
+
+    vec2_t pc = vec2_sub(c, p);
+    vec2_t pb = vec2_sub(b, p);
+
+    vec2_t ap = vec2_sub(p, a);
+
+
+    float ac_cross_ab = vec2_cross(ac, ab);
+
+    vec3_t aaaa;
+
+    return aaaa;
+}

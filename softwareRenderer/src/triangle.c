@@ -65,8 +65,8 @@ static void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, in
 	int dx_2 = x2 - x0;
 	float xstep_2 = (float)dx_2 / dy_2; // inverse slope, for every 1 increment in y, how much to step in x?
 
-	float x_start = x0;
-	float x_end = x0;
+	float x_start = roundf(x0);
+	float x_end = roundf(x0);
 	for (int y = y0; y <= y1; y++) {
 		draw_line((int) roundf(x_start), y, (int) roundf(x_end), y, color);
 		x_start += xstep_1;
@@ -84,8 +84,8 @@ static void fill_flat_top_triangle(int x0, int y0, int x1, int y1, int x2, int y
 	int dx_2 = x2 - x1;
 	float xstep_2 = (float)dx_2 / dy_1;
 
-	float x_start = x2;
-	float x_end = x2;
+	float x_start = roundf(x2);
+	float x_end = roundf(x2);
 	for (int y = y2; y >= y0; y--) {
 		draw_line((int) roundf(x_start), y, (int) roundf(x_end), y, color);
 		x_start -= xstep_1;
@@ -153,8 +153,8 @@ static void texture_flat_top_triangle(int x0, int y0, float u0, float v0, int x1
 	int dx_2 = x2 - x1;
 	float xstep_2 = (float)dx_2 / dy_1;
 
-	float x_start = x2;
-	float x_end = x2;
+	float x_start = roundf(x2);
+	float x_end = roundf(x2);
 	for (int y = y2; y >= y0; y--) {
 		// If we're rotated the other way, lets swap so we are still drawing left to right
 		if (x_end < x_start) {
