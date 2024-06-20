@@ -1,6 +1,7 @@
 #include "texture.h"
 #include <stdio.h>
 #include "vector.h"
+#include "display.h"
 
 int texture_width = 64;
 int texture_height = 64;
@@ -75,7 +76,7 @@ const uint8_t REDBRICK_TEXTURE[] = {
 uint32_t* mesh_texture = NULL;
 
 vec3_t barycentric_weights(vec2_t a, vec2_t b, vec2_t c, vec2_t p) {
-    // We get to reuse these from the derivation
+    // We get to reuse these from the derivation, only 2 crosses needed as well
     vec2_t ac = vec2_sub(c, a);
     vec2_t ab = vec2_sub(b, a);
 
@@ -84,10 +85,36 @@ vec3_t barycentric_weights(vec2_t a, vec2_t b, vec2_t c, vec2_t p) {
 
     vec2_t ap = vec2_sub(p, a);
 
-
     float ac_cross_ab = vec2_cross(ac, ab);
+    float pc_cross_pb = vec2_cross(pc, pb);
+    float ac_cross_ap = vec2_cross(ac, ap);
 
-    vec3_t aaaa;
+    float alpha = pc_cross_pb / ac_cross_ab;
+    float beta = ac_cross_ap / ac_cross_ab;
+    float gamma = 1.0f - alpha - beta;
 
-    return aaaa;
+    vec3_t weights = { alpha, beta, gamma };
+    return weights;
+}
+
+void draw_texel(int x, int y, vec2_t a, vec2_t b, vec2_t c, tex2_t a_uv, tex2_t b_uv, tex2_t c_uv, uint32_t* texture) {
+    vec2_t p = { x, y };
+    vec3_t weights = barycentric_weights(a, b, c, p);
+    float alpha = weights.x;
+    float beta = weights.y;
+    float gamma = weights.z;
+
+    tex2_t interp = {
+        .u = a_uv.u * alpha + b_uv.u * beta + c_uv.u * gamma,
+        .v = a_uv.v * alpha + b_uv.v * beta + c_uv.v * gamma
+    };
+
+    int tex_x = abs(roundf(interp.u * texture_width));
+    int tex_y = abs(roundf(interp.v * texture_height));
+
+    int index = tex_y * texture_width + tex_x;
+    if (index > texture_width * texture_height)
+        return;
+
+    draw_pixel(x, y, texture[tex_y * texture_width + tex_x]);
 }

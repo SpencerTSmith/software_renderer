@@ -17,5 +17,9 @@ extern uint32_t* mesh_texture;
 // Return barycentric weights of vertices alpha, beta, gamma with respect to point p
 vec3_t barycentric_weights(vec2_t a, vec2_t b, vec2_t c, vec2_t p);
 
+// Draw texel based not only on xy coords of point, but also it's interpolated uv coords from triangle vertice info
+// We pass in x and y as int so that the we draw at the right discrete pixel, everything else is calculated using floating point
+void draw_texel(int x, int y, vec2_t a, vec2_t b, vec2_t c, tex2_t a_uv, tex2_t b_uv, tex2_t c_uv, uint32_t* texture);
+
 extern const uint8_t REDBRICK_TEXTURE[];
 #endif

@@ -111,7 +111,7 @@ static void update(void) {
 
 	mesh.rotation.x += 0.01f;
 	mesh.rotation.y += 0.01f;
-	mesh.rotation.z += 0.01f;
+	//mesh.rotation.z += 0.01f;
 
 	//mesh.scale.x += 0.001f;
 
