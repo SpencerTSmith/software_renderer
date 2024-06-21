@@ -58,13 +58,13 @@ static void sort_uv_and_coords_by_y(int* x0, int* y0, float* u0, float* v0, int*
 
 // top to flat bottom, (x0, y0) at top of triangle, other two being the bottom
 static void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color) {
-	int dy_1 = y1 - y0;
 	int dx_1 = x1 - x0;
-	float xstep_1 = (float)dx_1 / dy_1; // inverse slope, for every 1 increment in y, how much to step in x?
+	int dy_1 = y1 - y0;
+	float xstep_1 = (float) dx_1 / dy_1; // inverse slope, for every 1 increment in y, how much to step in x?
 
-	int dy_2 = y2 - y0;
 	int dx_2 = x2 - x0;
-	float xstep_2 = (float)dx_2 / dy_2; // inverse slope, for every 1 increment in y, how much to step in x?
+	int dy_2 = y2 - y0;
+	float xstep_2 = (float) dx_2 / dy_2; // inverse slope, for every 1 increment in y, how much to step in x?
 
 	float x_start = x0;
 	float x_end = x0;
@@ -77,13 +77,13 @@ static void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, in
 
 // (x0, y0) and (x1, y1) being the two top vertices, (x2, y2) being the bottom vertex
 static void fill_flat_top_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color) {
-	int dy_1 = y2 - y0;
 	int dx_1 = x2 - x0;
-	float xstep_1 = (float)dx_1 / dy_1;
+	int dy_1 = y2 - y0;
+	float xstep_1 = (float) dx_1 / dy_1;
 
-	int dy_2 = y2 - y1;
 	int dx_2 = x2 - x1;
-	float xstep_2 = (float)dx_2 / dy_1;
+	int dy_2 = y2 - y1;
+	float xstep_2 = (float) dx_2 / dy_2;
 
 	float x_start = x2;
 	float x_end = x2;
@@ -119,13 +119,13 @@ void draw_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32
 }
 
 static void texture_flat_bottom_triangle(int x0, int y0, float u0, float v0, int x1, int y1, float u1, float v1, int x2, int y2, float u2, float v2, uint32_t* texture) {
-	int dy_1 = y1 - y0;
 	int dx_1 = x1 - x0;
-	float xstep_1 = (float)dx_1 / dy_1; // inverse slope, for every 1 increment in y, how much to step in x?
+	int dy_1 = y1 - y0;
+	float xstep_1 = (float) dx_1 / dy_1; // inverse slope, for every 1 increment in y, how much to step in x?
 
-	int dy_2 = y2 - y0;
 	int dx_2 = x2 - x0;
-	float xstep_2 = (float)dx_2 / dy_2; // inverse slope, for every 1 increment in y, how much to step in x?
+	int dy_2 = y2 - y0;
+	float xstep_2 = (float) dx_2 / dy_2; // inverse slope, for every 1 increment in y, how much to step in x?
 	
 	float x_start = x0;
 	float x_end = x0;
@@ -159,17 +159,17 @@ static void texture_flat_bottom_triangle(int x0, int y0, float u0, float v0, int
 }
 
 static void texture_flat_top_triangle(int x0, int y0, float u0, float v0, int x1, int y1, float u1, float v1, int x2, int y2, float u2, float v2, uint32_t* texture) {
-	int dy_1 = y2 - y0;
-	int dx_1 = x2 - x0;
-	float xstep_1 = (float)dx_1 / dy_1;
+	int dx_1 = x2 - x1;
+	int dy_1 = y2 - y1;
+	float xstep_1 = (float) dx_1 / dy_1;
 
-	int dy_2 = y2 - y1;
-	int dx_2 = x2 - x1;
-	float xstep_2 = (float)dx_2 / dy_1;
+	int dx_2 = x2 - x0;
+	int dy_2 = y2 - y0;
+	float xstep_2 = (float) dx_2 / dy_2;
 
 	float x_start = x2;
 	float x_end = x2;
-	for (int y = y2; y >= y0; y--) {
+	for (int y = y2; y >= y1; y--) {
 		// If we're rotated the other way, lets swap so we are still drawing left to right
 		if (x_end < x_start) {
 			float_swap(&x_start, &x_end);
@@ -214,12 +214,15 @@ void draw_textured_triangle(int x0, int y0, float u0, float v0, int x1, int y1, 
 		return;
 	}
 
+	texture_flat_bottom_triangle(x0, y0, u0, v0, x1, y1, u1, v1, x2, y2, u2, v2, texture);
+	texture_flat_top_triangle(x0, y0, u0, v0, x1, y1, u1, v1, x2, y2, u2, v2, texture);
+
+
+
 	// midpoints for uv and normal coords
 	int mx = roundf(x0 + (float)(x2 - x0) * (y1 - y0) / (y2 - y0));
 	int my = y1;
-	/*float mu = (u0 + (u2 - u0) * (v1 -v0) / (v2 - v0));
-	float mv = v1;*/
-
-	texture_flat_bottom_triangle(x0, y0, u0, v0, x1, y1, u1, v1, mx, my, u2, v2, texture);
-	texture_flat_top_triangle(x1, y1, u1, v1, mx, my, u1, v1, x2, y2, u2, v2, texture);
+	// Not correct
+	float mu = (u0 + (u2 - u0) * (v1 -v0) / (v2 - v0));
+	float mv = v1;
 }
