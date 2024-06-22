@@ -152,3 +152,12 @@ vec3_t vec4_to_vec3(vec4_t v) {
 	};
 	return result;
 }
+
+vec2_t vec4_to_vec2(vec4_t v)
+{
+	vec2_t result = {
+		v.x,
+		v.y
+	};
+	return result;
+}

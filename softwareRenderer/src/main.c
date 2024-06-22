@@ -111,7 +111,7 @@ static void update(void) {
 
 	mesh.rotation.x += 0.01f;
 	mesh.rotation.y += 0.01f;
-	//mesh.rotation.z += 0.01f;
+	mesh.rotation.z += 0.01f;
 
 	//mesh.scale.x += 0.001f;
 
@@ -180,7 +180,7 @@ static void update(void) {
 		float light_alignment = -(vec3_dot(global_light.direction, face_normal)); // Negative because pointing at the light means more light
 		uint32_t shaded_color = light_apply_intensity(mesh_face.color, light_alignment); 
 
-		// Project into 2d points, but still saving the new "adjusted" z and original z in w
+		// Project into 2d points, but still saving the new "adjusted" z, and original z in w
 		vec4_t projected_vertices[3];
 		for (int j = 0; j < 3; j++) {
 			// Project to screen space
@@ -195,8 +195,7 @@ static void update(void) {
 			projected_vertex.y += (window_height / 2.f);
 
 			// Save that point into triangle
-			projected_vertices[j].x = projected_vertex.x;
-			projected_vertices[j].y = projected_vertex.y;
+			projected_vertices[j] = projected_vertex;
 		}
 
 		triangle_t projected_triangle = {

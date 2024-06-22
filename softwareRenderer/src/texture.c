@@ -118,3 +118,37 @@ void draw_affine_texel(int x, int y, vec2_t a, vec2_t b, vec2_t c, tex2_t a_uv, 
 
     draw_pixel(x, y, texture[index]);
 }
+
+void draw_texel(int x, int y, vec4_t a, vec4_t b, vec4_t c, tex2_t a_uv, tex2_t b_uv, tex2_t c_uv, uint32_t* texture) {
+    vec2_t p = { x, y };
+    vec2_t a_2 = vec4_to_vec2(a);
+    vec2_t b_2 = vec4_to_vec2(b);
+    vec2_t c_2 = vec4_to_vec2(c);
+
+    vec3_t weights = barycentric_weights(a_2, b_2, c_2, p);
+    float alpha = weights.x;
+    float beta = weights.y;
+    float gamma = weights.z;
+
+    // interpolated U/w and V/w, perspective divide over each pixel
+    tex2_t interp_uv = {
+        .u = (a_uv.u / a.w) * alpha + (b_uv.u / b.w) * beta + (c_uv.u / c.w) * gamma,
+        .v = (a_uv.v / a.w) * alpha + (b_uv.v / b.w) * beta + (c_uv.v / c.w) * gamma
+    };
+
+    // we also need to interpolate 1/w for our current pixel
+    float interp_inv_w = (1 / a.w) * alpha + (1 / b.w) * beta + (1 / c.w) * gamma;
+
+    // now "undo"
+    interp_uv.u /= interp_inv_w;
+    interp_uv.v /= interp_inv_w;
+
+    int tex_x = abs(roundf(interp_uv.u * texture_width));
+    int tex_y = abs(roundf(interp_uv.v * texture_height));
+
+    int index = tex_y * texture_width + tex_x;
+    if (index > texture_width * texture_height)
+        return;
+
+    draw_pixel(x, y, texture[index]);
+}
