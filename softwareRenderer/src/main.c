@@ -15,7 +15,7 @@ triangle_t* triangles_to_render = NULL;
 
 vec3_t camera_position = { 0, 0, 0 };
 mat4_t projection_matrix;
-light_t global_light = { 1, -1, 1 };
+light_t global_light = { 0, 0, 1 };
 
 static bool is_running = false;
 static int previous_frame_time = 0;
@@ -180,7 +180,7 @@ static void update(void) {
 		float light_alignment = -(vec3_dot(global_light.direction, face_normal)); // Negative because pointing at the light means more light
 		uint32_t shaded_color = light_apply_intensity(mesh_face.color, light_alignment); 
 
-		// Project into 2d points
+		// Project into 2d points, but still saving the new "adjusted" z and original z in w
 		vec4_t projected_vertices[3];
 		for (int j = 0; j < 3; j++) {
 			// Project to screen space
@@ -201,9 +201,9 @@ static void update(void) {
 
 		triangle_t projected_triangle = {
 			.points = {
-				{ projected_vertices[0].x, projected_vertices[0].y },
-				{ projected_vertices[1].x, projected_vertices[1].y },
-				{ projected_vertices[2].x, projected_vertices[2].y }
+				{ projected_vertices[0].x, projected_vertices[0].y, projected_vertices[0].z, projected_vertices[0].w },
+				{ projected_vertices[1].x, projected_vertices[1].y, projected_vertices[1].z, projected_vertices[1].w },
+				{ projected_vertices[2].x, projected_vertices[2].y, projected_vertices[2].z, projected_vertices[2].w }
 			},
 			.tex_coords = {
 				{ mesh_face.a_uv.u, mesh_face.a_uv.v },
@@ -242,9 +242,9 @@ static void render(void) {
 		// Draw Textured Triangles
 		if (render_mode == RENDER_TEXTURE || render_mode == RENDER_TEXTURE_WIRE) {
 			draw_textured_triangle(
-				triangle.points[0].x, triangle.points[0].y, triangle.tex_coords[0].u, triangle.tex_coords[0].v,
-				triangle.points[1].x, triangle.points[1].y, triangle.tex_coords[1].u, triangle.tex_coords[1].v,
-				triangle.points[2].x, triangle.points[2].y, triangle.tex_coords[2].u, triangle.tex_coords[2].v,
+				triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w, triangle.tex_coords[0].u, triangle.tex_coords[0].v,
+				triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w, triangle.tex_coords[1].u, triangle.tex_coords[1].v,
+				triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w, triangle.tex_coords[2].u, triangle.tex_coords[2].v,
 				mesh_texture);
 		}
 

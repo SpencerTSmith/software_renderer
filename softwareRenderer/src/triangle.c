@@ -33,8 +33,11 @@ static void sort_coords_by_y(int* x0, int* y0, int* x1, int* y1, int* x2, int* y
 	}
 }
 
-// for textured triangles, also switch the associated uv coords
-static void sort_uv_and_coords_by_y(int* x0, int* y0, float* u0, float* v0, int* x1, int* y1, float* u1, float* v1, int* x2, int* y2, float* u2, float* v2) {
+// for affine textured triangles, also switch the associated uv coords
+static void sort_uv_and_coords_by_y(
+	int* x0, int* y0, float* u0, float* v0, 
+	int* x1, int* y1, float* u1, float* v1, 
+	int* x2, int* y2, float* u2, float* v2) {
 	// sort vertex coordinates by "ascending" y's, remember y grows downwards in screen space
 	if (*y0 > *y1) {
 		int_swap(y0, y1);
@@ -51,6 +54,38 @@ static void sort_uv_and_coords_by_y(int* x0, int* y0, float* u0, float* v0, int*
 	if (*y0 > *y1) { // check again, previous may still not be in order
 		int_swap(y0, y1);
 		int_swap(x0, x1);
+		float_swap(u0, u1);
+		float_swap(v0, v1);
+	}
+}
+
+// for perspective correct texture triangles
+static void sort_all_by_y(
+	int* x0, int* y0, float* z0, float* w0, float* u0, float* v0, 
+	int* x1, int* y1, float* z1, float* w1, float* u1, float* v1, 
+	int* x2, int* y2, float* z2, float* w2, float* u2, float* v2) {
+	// sort vertex coordinates by "ascending" y's, remember y grows downwards in screen space
+	if (*y0 > *y1) {
+		int_swap(y0, y1);
+		int_swap(x0, x1);
+		float_swap(z0, z1);
+		float_swap(w0, w1);
+		float_swap(u0, u1);
+		float_swap(v0, v1);
+	}
+	if (*y1 > *y2) {
+		int_swap(y1, y2);
+		int_swap(x1, x2);
+		float_swap(z1, z2);
+		float_swap(w1, w2);
+		float_swap(u1, u2);
+		float_swap(v1, v2);
+	}
+	if (*y0 > *y1) { // check again, previous may still not be in order
+		int_swap(y0, y1);
+		int_swap(x0, x1);
+		float_swap(z0, z1);
+		float_swap(w0, w1);
 		float_swap(u0, u1);
 		float_swap(v0, v1);
 	}
@@ -118,7 +153,10 @@ void draw_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32
 	fill_flat_top_triangle(x1, y1, mx, my, x2, y2, color);
 }
 
-static void texture_flat_bottom_triangle(int x0, int y0, float u0, float v0, int x1, int y1, float u1, float v1, int x2, int y2, float u2, float v2, uint32_t* texture) {
+static void affine_texture_flat_bottom_triangle(
+	int x0, int y0, float u0, float v0, 
+	int x1, int y1, float u1, float v1, 
+	int x2, int y2, float u2, float v2, uint32_t* texture) {
 	int dx_1 = x1 - x0;
 	int dy_1 = y1 - y0;
 	float xstep_1 = (float) dx_1 / dy_1; // inverse slope, for every 1 increment in y, how much to step in x?
@@ -149,7 +187,7 @@ static void texture_flat_bottom_triangle(int x0, int y0, float u0, float v0, int
 				tex2_t b_uv = { u1, v1 };
 				tex2_t c_uv = { u2, v2 };
 
-				draw_texel(x, y, a, b, c, a_uv, b_uv, c_uv, texture);
+				draw_affine_texel(x, y, a, b, c, a_uv, b_uv, c_uv, texture);
 			}
 		}
 
@@ -158,7 +196,11 @@ static void texture_flat_bottom_triangle(int x0, int y0, float u0, float v0, int
 	}
 }
 
-static void texture_flat_top_triangle(int x0, int y0, float u0, float v0, int x1, int y1, float u1, float v1, int x2, int y2, float u2, float v2, uint32_t* texture) {
+static void affine_texture_flat_top_triangle(
+	int x0, int y0, float u0, float v0, 
+	int x1, int y1, float u1, float v1, 
+	int x2, int y2, float u2, float v2, 
+	uint32_t* texture) {
 	int dx_1 = x2 - x1;
 	int dy_1 = y2 - y1;
 	float xstep_1 = (float) dx_1 / dy_1;
@@ -189,7 +231,7 @@ static void texture_flat_top_triangle(int x0, int y0, float u0, float v0, int x1
 				tex2_t b_uv = { u1, v1 };
 				tex2_t c_uv = { u2, v2 };
 
-				draw_texel(x, y, a, b, c, a_uv, b_uv, c_uv, texture);
+				draw_affine_texel(x, y, a, b, c, a_uv, b_uv, c_uv, texture);
 			}
 		}
 
@@ -199,23 +241,27 @@ static void texture_flat_top_triangle(int x0, int y0, float u0, float v0, int x1
 }
 
 
-void draw_textured_triangle(int x0, int y0, float u0, float v0, int x1, int y1, float u1, float v1, int x2, int y2, float u2, float v2, uint32_t* texture) {
+void draw_affine_textured_triangle(
+	int x0, int y0, float u0, float v0, 
+	int x1, int y1, float u1, float v1, 
+	int x2, int y2, float u2, float v2, 
+	uint32_t* texture) {
 	sort_uv_and_coords_by_y(&x0, &y0, &u0, &v0, &x1, &y1, &u1, &v1, &x2, &y2, & u2, &v2);
 
 	// already flat bottom
 	if (y1 == y2) {
-		texture_flat_bottom_triangle(x0, y0, u0, v0, x1, y1, u1, v1, x2, y2, u2, v2, texture);
+		affine_texture_flat_bottom_triangle(x0, y0, u0, v0, x1, y1, u1, v1, x2, y2, u2, v2, texture);
 		return;
 	}
 
 	// already flat top
 	if (y0 == y1) {
-		texture_flat_top_triangle(x0, y0, u0, v0, x1, y1, u1, v1, x2, y2, u2, v2, texture);
+		affine_texture_flat_top_triangle(x0, y0, u0, v0, x1, y1, u1, v1, x2, y2, u2, v2, texture);
 		return;
 	}
 
-	texture_flat_bottom_triangle(x0, y0, u0, v0, x1, y1, u1, v1, x2, y2, u2, v2, texture);
-	texture_flat_top_triangle(x0, y0, u0, v0, x1, y1, u1, v1, x2, y2, u2, v2, texture);
+	affine_texture_flat_bottom_triangle(x0, y0, u0, v0, x1, y1, u1, v1, x2, y2, u2, v2, texture);
+	affine_texture_flat_top_triangle(x0, y0, u0, v0, x1, y1, u1, v1, x2, y2, u2, v2, texture);
 
 
 
@@ -225,4 +271,27 @@ void draw_textured_triangle(int x0, int y0, float u0, float v0, int x1, int y1, 
 	// Not correct
 	float mu = (u0 + (u2 - u0) * (v1 -v0) / (v2 - v0));
 	float mv = v1;
+}
+
+void draw_textured_triangle(
+	int x0, int y0, float z0, float w0, float u0, float v0, 
+	int x1, int y1, float z1, float w1, float u1, float v1, 
+	int x2, int y2, float z2, float w2, float u2, float v2, 
+	uint32_t* texture) {
+	sort_all_by_y(
+		&x0, &y0, &z0, &w0, &u0, &v0,
+		&x1, &y1, &z1, &w1, &u1, &v1,
+		&x2, &y2, &z2, &w2, &u2, &v2);
+
+	// already flat bottom
+	if (y1 == y2) {
+		return;
+	}
+
+	// already flat top
+	if (y0 == y1) {
+		return;
+	}
+
+
 }

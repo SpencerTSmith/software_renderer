@@ -97,7 +97,7 @@ vec3_t barycentric_weights(vec2_t a, vec2_t b, vec2_t c, vec2_t p) {
     return weights;
 }
 
-void draw_texel(int x, int y, vec2_t a, vec2_t b, vec2_t c, tex2_t a_uv, tex2_t b_uv, tex2_t c_uv, uint32_t* texture) {
+void draw_affine_texel(int x, int y, vec2_t a, vec2_t b, vec2_t c, tex2_t a_uv, tex2_t b_uv, tex2_t c_uv, uint32_t* texture) {
     vec2_t p = { x, y };
     vec3_t weights = barycentric_weights(a, b, c, p);
     float alpha = weights.x;
@@ -116,5 +116,5 @@ void draw_texel(int x, int y, vec2_t a, vec2_t b, vec2_t c, tex2_t a_uv, tex2_t 
     if (index > texture_width * texture_height)
         return;
 
-    draw_pixel(x, y, texture[tex_y * texture_width + tex_x]);
+    draw_pixel(x, y, texture[index]);
 }
