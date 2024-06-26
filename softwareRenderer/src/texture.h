@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "vector.h"
+#include "utilities/upng.h"
 
 typedef struct {
 	float u;
@@ -13,6 +14,12 @@ extern int texture_width;
 extern int texture_height;
 
 extern uint32_t* mesh_texture;
+
+void texture_free(uint32_t* texture);
+
+void load_redbrick_mesh_texture();
+
+void load_png_texture_data(const char* filename);
 
 // Return barycentric weights of vertices alpha, beta, gamma with respect to point p
 vec3_t barycentric_weights(vec2_t a, vec2_t b, vec2_t c, vec2_t p);

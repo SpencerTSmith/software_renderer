@@ -1,7 +1,9 @@
 #include "texture.h"
 #include <stdio.h>
+#include <string.h>
 #include "vector.h"
 #include "display.h"
+#include "utilities/upng.h"
 
 int texture_width = 64;
 int texture_height = 64;
@@ -75,6 +77,32 @@ const uint8_t REDBRICK_TEXTURE[] = {
 
 uint32_t* mesh_texture = NULL;
 
+void texture_free(uint32_t* texture) {
+    free(texture);
+}
+
+void load_redbrick_mesh_texture() {
+    mesh_texture = (uint32_t*) REDBRICK_TEXTURE;
+    texture_height = 64;
+    texture_width = 64;
+}
+
+void load_png_texture_data(const char* filename) {
+    upng_t* png = upng_new_from_file(filename);
+    if (png != NULL) {
+        upng_decode(png);
+        if (upng_get_error(png) == UPNG_EOK) {
+            texture_width = upng_get_width(png);
+            texture_height = upng_get_height(png);
+            mesh_texture = (uint32_t*)malloc(upng_get_size(png));
+            if (mesh_texture != NULL && upng_get_buffer(png) != NULL) {
+                memcpy(mesh_texture, upng_get_buffer(png), upng_get_size(png));
+            }
+        }
+    }
+    upng_free(png);
+}
+
 vec3_t barycentric_weights(vec2_t a, vec2_t b, vec2_t c, vec2_t p) {
     // We get to reuse these from the derivation, only 2 crosses needed as well
     vec2_t ac = vec2_sub(c, a);
@@ -130,7 +158,9 @@ void draw_texel(int x, int y, vec4_t a, vec4_t b, vec4_t c, tex2_t a_uv, tex2_t 
     float beta = weights.y;
     float gamma = weights.z;
 
-    // interpolated U/w and V/w, perspective divide over each pixel
+    // 1/z is related linearly to the point p, original z is saved in w so 1/w
+
+    // interpolated U/w and V/w, perspective divide over the interpolated point
     tex2_t interp_uv = {
         .u = (a_uv.u / a.w) * alpha + (b_uv.u / b.w) * beta + (c_uv.u / c.w) * gamma,
         .v = (a_uv.v / a.w) * alpha + (b_uv.v / b.w) * beta + (c_uv.v / c.w) * gamma

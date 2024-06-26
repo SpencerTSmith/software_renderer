@@ -22,7 +22,7 @@ static int previous_frame_time = 0;
 
 // Color buffer initialization, other setups too
 static void setup(void) {
-	render_mode = RENDER_TEXTURE;	// default render mode
+	render_mode = RENDER_FILL;	// default render mode
 	cull_mode = CULL_BACKFACE;	// default cull mode
 
 	// Memory for color buffer
@@ -33,7 +33,7 @@ static void setup(void) {
 	}
 
 	// SDL texture for rendering buffer from memory
-	color_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
+	color_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
 	if (!color_buffer) {
 		fprintf(stderr, "Error creating color buffer texture.\n");
 		is_running = false;
@@ -46,11 +46,11 @@ static void setup(void) {
 	projection_matrix = mat4_make_perspective(fov, inv_aspect, znear, zfar);
 
 	// Load hard coded redbrick texture
-	mesh_texture = (uint32_t*) REDBRICK_TEXTURE;
-	texture_height = 64;
-	texture_width = 64;
-
+	//load_redbrick_mesh_texture();
+	
+	load_png_texture_data("./assets/cube.png");
 	load_cube_mesh_data();
+
 	//load_obj_file_data("./assets/f22.obj");
 }
 
@@ -86,19 +86,8 @@ static void process_input(void) {
 	}
 }
 
-// Naive initial perspective projection
-//vec2_t project(vec3_t point) {
-//	vec2_t projected_point = {
-//		.x = (fov_factor * point.x) / point.z,
-//		.y = (fov_factor * point.y) / point.z
-//	};
-//	return projected_point;
-//}
-
+// Might be thought of as our vertex shader
 static void update(void) {
-	// wait for goal frame times, stupid style
-	//while (!SDL_TICKS_PASSED(SDL_GetTicks(), previous_frame_time + FRAME_TARGET_TIME));
-	
 	// hit goal frame time
 	int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks() - previous_frame_time);
 	if (time_to_wait > 0 && time_to_wait <= FRAME_TARGET_TIME) {
@@ -109,9 +98,9 @@ static void update(void) {
 	// Reset triangles
 	triangles_to_render = NULL;
 
-	mesh.rotation.x += 0.01f;
+	//mesh.rotation.x += 0.01f;
 	mesh.rotation.y += 0.01f;
-	mesh.rotation.z += 0.01f;
+	//mesh.rotation.z += 0.01f;
 
 	//mesh.scale.x += 0.001f;
 
@@ -155,7 +144,8 @@ static void update(void) {
 			transformed_vertices[j] = transformed_vertex;
 		}
 
-		float avg_z = (transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z) / 3.0f; // average z value of this triangle
+		// Not necessary to divide by 3 here
+		float avg_z = transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z;
 		
 		// Calculate normal of face for purposes of lighting and culling
 		vec3_t A = vec4_to_vec3(transformed_vertices[0]);
@@ -230,7 +220,7 @@ static void update(void) {
 	}
 }
 
-// Draw to screen
+// Might be thought of as our rasterizer and fragment shader
 static void render(void) {
 	draw_grid(0xFF808080);
 
@@ -289,6 +279,7 @@ static void render(void) {
 }
 
 static void free_resources(void) {
+	texture_free(mesh_texture);
 	free(color_buffer);
 	array_free(mesh.faces);
 	array_free(mesh.vertices);

@@ -26,7 +26,9 @@ void load_obj_file_data(const char* file_name) {
 		// Vertices
 		if (line[0] == 'v' && line[1] == ' ') {
 			vec3_t obj_vertex;
-			sscanf_s(line, "v %f %f %f", &obj_vertex.x, &obj_vertex.y, &obj_vertex.z);
+			if (!sscanf(line, "v %f %f %f", &obj_vertex.x, &obj_vertex.y, &obj_vertex.z)) {
+				fprintf(stderr, "Error reading vertex data .obj file");
+			}
 			array_push(mesh.vertices, obj_vertex);
 		}
 		// Faces
@@ -36,17 +38,19 @@ void load_obj_file_data(const char* file_name) {
 			int normal_indices[3];
 
 			// Temporary fix for models without normals
-			/*sscanf_s(line, "f %d/%d %d/%d %d/%d ",
+			/*sscanf(line, "f %d/%d %d/%d %d/%d ",
 				&vertex_indices[0], &texture_indices[0], 
 				&vertex_indices[1], &texture_indices[1],
 				&vertex_indices[2], &texture_indices[2]
 				);*/
 
-			sscanf_s(line, "f %d/%d/%d %d/%d/%d %d/%d/%d ",
+			if (!sscanf(line, "f %d/%d/%d %d/%d/%d %d/%d/%d ",
 				&vertex_indices[0], &texture_indices[0], &normal_indices[0],
 				&vertex_indices[1], &texture_indices[1], &normal_indices[1],
 				&vertex_indices[2], &texture_indices[2], &normal_indices[2]
-				);
+			)) {
+				fprintf(stderr, "Error reading vertex indice data from .obj file");
+			}
 			
 			face_t obj_face = {
 				.a = vertex_indices[0], 
@@ -56,7 +60,6 @@ void load_obj_file_data(const char* file_name) {
 			array_push(mesh.faces, obj_face);
 		}
 	}
-
 
 	fclose(obj_file);
 }
@@ -75,23 +78,23 @@ vec3_t cube_vertices[N_CUBE_VERTICES] = {
 
 // Cube faces, by index of vertices
 face_t cube_faces[N_CUBE_FACES] = {
-	{.a = 1, .b = 2, .c = 3, .a_uv = { 0, 0 }, .b_uv = { 0, 1 }, .c_uv = { 1, 1 }, .color = 0xFFFFFFFF}, // tri 1 of front
-	{.a = 1, .b = 3, .c = 4, .a_uv = { 0, 0 }, .b_uv = { 1, 1 }, .c_uv = { 1, 0 }, .color = 0xFFFFFFFF}, // tri 2 of front
+	{.a = 1, .b = 2, .c = 3, .a_uv = { 0, 1 }, .b_uv = { 0, 0 }, .c_uv = { 1, 0 }, .color = 0xFFFFFFFF}, // tri 1 of front
+	{.a = 1, .b = 3, .c = 4, .a_uv = { 0, 1 }, .b_uv = { 1, 0 }, .c_uv = { 1, 1 }, .color = 0xFFFFFFFF}, // tri 2 of front
 
-	{.a = 4, .b = 3, .c = 5, .a_uv = { 0, 0 }, .b_uv = { 0, 1 }, .c_uv = { 1, 1 }, .color = 0xFFFFFFFF}, // tri 1 of east
-	{.a = 4, .b = 5, .c = 6, .a_uv = { 0, 0 }, .b_uv = { 1, 1 }, .c_uv = { 1, 0 }, .color = 0xFFFFFFFF}, // tri 2 of east
+	{.a = 4, .b = 3, .c = 5, .a_uv = { 0, 1 }, .b_uv = { 0, 0 }, .c_uv = { 1, 0 }, .color = 0xFFFFFFFF}, // tri 1 of east
+	{.a = 4, .b = 5, .c = 6, .a_uv = { 0, 1 }, .b_uv = { 1, 0 }, .c_uv = { 1, 1 }, .color = 0xFFFFFFFF}, // tri 2 of east
 							  
-	{.a = 6, .b = 5, .c = 7, .a_uv = { 0, 0 }, .b_uv = { 0, 1 }, .c_uv = { 1, 1 }, .color = 0xFFFFFFFF}, // tri 1 of back
-	{.a = 6, .b = 7, .c = 8, .a_uv = { 0, 0 }, .b_uv = { 1, 1 }, .c_uv = { 1, 0 }, .color = 0xFFFFFFFF}, // tri 2 of back
+	{.a = 6, .b = 5, .c = 7, .a_uv = { 0, 1 }, .b_uv = { 0, 0 }, .c_uv = { 1, 0 }, .color = 0xFFFFFFFF}, // tri 1 of back
+	{.a = 6, .b = 7, .c = 8, .a_uv = { 0, 1 }, .b_uv = { 1, 0 }, .c_uv = { 1, 1 }, .color = 0xFFFFFFFF}, // tri 2 of back
 							 
-	{.a = 8, .b = 7, .c = 2, .a_uv = { 0, 0 }, .b_uv = { 0, 1 }, .c_uv = { 1, 1 }, .color = 0xFFFFFFFF}, // tri 1 of west
-	{.a = 8, .b = 2, .c = 1, .a_uv = { 0, 0 }, .b_uv = { 1, 1 }, .c_uv = { 1, 0 }, .color = 0xFFFFFFFF}, // tri 2 of west
+	{.a = 8, .b = 7, .c = 2, .a_uv = { 0, 1 }, .b_uv = { 0, 0 }, .c_uv = { 1, 0 }, .color = 0xFFFFFFFF}, // tri 1 of west
+	{.a = 8, .b = 2, .c = 1, .a_uv = { 0, 1 }, .b_uv = { 1, 0 }, .c_uv = { 1, 1 }, .color = 0xFFFFFFFF}, // tri 2 of west
 							  
-	{.a = 2, .b = 7, .c = 5, .a_uv = { 0, 0 }, .b_uv = { 0, 1 }, .c_uv = { 1, 1 }, .color = 0xFFFFFFFF}, // tri 1 of top
-	{.a = 2, .b = 5, .c = 3, .a_uv = { 0, 0 }, .b_uv = { 1, 1 }, .c_uv = { 1, 0 }, .color = 0xFFFFFFFF}, // tri 2 of top
+	{.a = 2, .b = 7, .c = 5, .a_uv = { 0, 1 }, .b_uv = { 0, 0 }, .c_uv = { 1, 0 }, .color = 0xFFFFFFFF}, // tri 1 of top
+	{.a = 2, .b = 5, .c = 3, .a_uv = { 0, 1 }, .b_uv = { 1, 0 }, .c_uv = { 1, 1 }, .color = 0xFFFFFFFF}, // tri 2 of top
 							 
-	{.a = 8, .b = 1, .c = 4, .a_uv = { 0, 0 }, .b_uv = { 0, 1 }, .c_uv = { 1, 1 }, .color = 0xFFFFFFFF}, // tri 1 of bottom
-	{.a = 8, .b = 4, .c = 6, .a_uv = { 0, 0 }, .b_uv = { 1, 1 }, .c_uv = { 1, 0 }, .color = 0xFFFFFFFF}  // tri 2 of bottom
+	{.a = 8, .b = 1, .c = 4, .a_uv = { 0, 1 }, .b_uv = { 0, 0 }, .c_uv = { 1, 0 }, .color = 0xFFFFFFFF}, // tri 1 of bottom
+	{.a = 8, .b = 4, .c = 6, .a_uv = { 0, 1 }, .b_uv = { 1, 0 }, .c_uv = { 1, 1 }, .color = 0xFFFFFFFF}  // tri 2 of bottom
 };
 
 void load_cube_mesh_data(void) {

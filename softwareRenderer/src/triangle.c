@@ -380,7 +380,7 @@ void draw_textured_triangle(
 			texture);
 		return;
 	}
-
+	
 	texture_flat_bottom_triangle(
 		x0, y0, z0, w0, u0, v0,
 		x1, y1, z1, w1, u1, v1,
