@@ -49,9 +49,9 @@ static void setup(void) {
 	//load_redbrick_mesh_texture();
 	
 	load_png_texture_data("./assets/cube.png");
-	load_cube_mesh_data();
+	//load_cube_mesh_data();
 
-	//load_obj_file_data("./assets/f22.obj");
+	load_obj_file_data("./assets/cube.obj");
 }
 
 // Poll for input while running
@@ -129,9 +129,9 @@ static void update(void) {
 
 		// Find vertices in face
 		vec3_t face_vertices[3] = {
-			mesh.vertices[mesh_face.a - 1],
-			mesh.vertices[mesh_face.b - 1],
-			mesh.vertices[mesh_face.c - 1]
+			mesh.vertices[mesh_face.a],
+			mesh.vertices[mesh_face.b],
+			mesh.vertices[mesh_face.c]
 		};
 
 		// Transform vertices

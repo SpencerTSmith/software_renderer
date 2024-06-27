@@ -104,7 +104,7 @@ static void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, in
 	float x_start = x0;
 	float x_end = x0;
 	for (int y = y0; y <= y1; y++) {
-		draw_line((int) roundf(x_start), y, (int) roundf(x_end), y, color);
+		draw_line(roundf(x_start), y, roundf(x_end), y, color);
 		x_start += xstep_1;
 		x_end += xstep_2;
 	}
@@ -123,7 +123,7 @@ static void fill_flat_top_triangle(int x0, int y0, int x1, int y1, int x2, int y
 	float x_start = x2;
 	float x_end = x2;
 	for (int y = y2; y >= y0; y--) {
-		draw_line((int) roundf(x_start), y, (int) roundf(x_end), y, color);
+		draw_line(roundf(x_start), y, roundf(x_end), y, color);
 		x_start -= xstep_1;
 		x_end -= xstep_2;
 	}
@@ -355,11 +355,13 @@ void draw_textured_triangle(
 	int x0, int y0, float z0, float w0, float u0, float v0, 
 	int x1, int y1, float z1, float w1, float u1, float v1, 
 	int x2, int y2, float z2, float w2, float u2, float v2, 
-	uint32_t* texture) {
+	uint32_t* texture) 
+{	
 	sort_all_by_y(
 		&x0, &y0, &z0, &w0, &u0, &v0,
 		&x1, &y1, &z1, &w1, &u1, &v1,
 		&x2, &y2, &z2, &w2, &u2, &v2);
+
 
 	// already flat bottom
 	if (y1 == y2) {

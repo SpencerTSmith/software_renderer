@@ -21,6 +21,8 @@ void load_obj_file_data(const char* file_name) {
 
 	char line[512];
 
+	tex2_t* texcoords = NULL; // dynamic array
+
 	while (fgets(line, 512, obj_file)) {
 
 		// Vertices
@@ -30,6 +32,14 @@ void load_obj_file_data(const char* file_name) {
 				fprintf(stderr, "Error reading vertex data .obj file");
 			}
 			array_push(mesh.vertices, obj_vertex);
+		}
+		else if (line[0] == 'v' && line[1] == 't') {
+			tex2_t coord;
+			if (!sscanf(line, "vt %f %f", &coord.u, &coord.v)) {
+				fprintf(stderr, "Error reading vertex texture coordinate data .obj file");
+			}
+			coord.v = 1 - coord.v; // adjust because .obj files have an inverted v compared to the renderer
+			array_push(texcoords, coord);
 		}
 		// Faces
 		else if (line[0] == 'f' && line[1] == ' ') {
@@ -53,14 +63,17 @@ void load_obj_file_data(const char* file_name) {
 			}
 			
 			face_t obj_face = {
-				.a = vertex_indices[0], 
-				.b = vertex_indices[1], 
-				.c = vertex_indices[2], 
+				.a = vertex_indices[0] - 1, // adjust by 1, indices start at 1 in .obj format
+				.b = vertex_indices[1] - 1,
+				.c = vertex_indices[2] - 1,
+				.a_uv = texcoords[texture_indices[0]-1], 
+				.b_uv = texcoords[texture_indices[1]-1],
+				.c_uv = texcoords[texture_indices[2]-1],
 				.color = 0xFFFFFFFF};
 			array_push(mesh.faces, obj_face);
 		}
 	}
-
+	array_free(texcoords);
 	fclose(obj_file);
 }
 

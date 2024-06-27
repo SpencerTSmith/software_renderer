@@ -173,12 +173,10 @@ void draw_texel(int x, int y, vec4_t a, vec4_t b, vec4_t c, tex2_t a_uv, tex2_t 
     interp_uv.u /= interp_inv_w;
     interp_uv.v /= interp_inv_w;
 
-    int tex_x = abs(roundf(interp_uv.u * texture_width));
-    int tex_y = abs(roundf(interp_uv.v * texture_height));
+    int tex_x = abs(roundf(interp_uv.u * texture_width)) % texture_width; // Modulo is hacky clamp
+    int tex_y = abs(roundf(interp_uv.v * texture_height)) % texture_height;
 
     int index = tex_y * texture_width + tex_x;
-    if (index > texture_width * texture_height)
-        return;
 
     draw_pixel(x, y, texture[index]);
 }
