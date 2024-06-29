@@ -2,7 +2,9 @@
 #define TEXTURE_H
 
 #include <stdint.h>
+
 #include "vector.h"
+
 #include "utilities/upng.h"
 
 typedef struct {

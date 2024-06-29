@@ -1,4 +1,7 @@
 #include "triangle.h"
+
+#include <SDL_thread.h>
+
 #include "display.h"
 #include "texture.h"
 
@@ -16,141 +19,112 @@ static void float_swap(float* a, float* b) {
 	*b = temp;
 }
 
-// ascending y's
-static void sort_coords_by_y(int* x0, int* y0, int* x1, int* y1, int* x2, int* y2) {
-	// sort vertex coordinates by "ascending" y's, remember y grows downwards in screen space
-	if (*y0 > *y1) {
-		int_swap(y0, y1);
-		int_swap(x0, x1);
-	}
-	if (*y1 > *y2) {
-		int_swap(y1, y2);
-		int_swap(x1, x2);
-	}
-	if (*y0 > *y1) { // check again, previous may still not be in order
-		int_swap(y0, y1);
-		int_swap(x0, x1);
-	}
+static void vec4_swap(vec4_t* a, vec4_t* b) {
+	vec4_t temp = *a;
+	*a = *b;
+	*b = temp;
 }
 
-// for affine textured triangles, also switch the associated uv coords
-static void sort_uv_and_coords_by_y(
-	int* x0, int* y0, float* u0, float* v0, 
-	int* x1, int* y1, float* u1, float* v1, 
-	int* x2, int* y2, float* u2, float* v2) {
-	// sort vertex coordinates by "ascending" y's, remember y grows downwards in screen space
-	if (*y0 > *y1) {
-		int_swap(y0, y1);
-		int_swap(x0, x1);
-		float_swap(u0, u1);
-		float_swap(v0, v1);
-	}
-	if (*y1 > *y2) {
-		int_swap(y1, y2);
-		int_swap(x1, x2);
-		float_swap(u1, u2);
-		float_swap(v1, v2);
-	}
-	if (*y0 > *y1) { // check again, previous may still not be in order
-		int_swap(y0, y1);
-		int_swap(x0, x1);
-		float_swap(u0, u1);
-		float_swap(v0, v1);
-	}
+static void tex2_swap(tex2_t* a, tex2_t* b) {
+	tex2_t temp = *a;
+	*a = *b;
+	*b = temp;
 }
 
-// for perspective correct texture triangles
-static void sort_all_by_y(
-	int* x0, int* y0, float* z0, float* w0, float* u0, float* v0, 
-	int* x1, int* y1, float* z1, float* w1, float* u1, float* v1, 
-	int* x2, int* y2, float* z2, float* w2, float* u2, float* v2) {
+void sort_triangle_by_y(triangle_t* triangle) {
 	// sort vertex coordinates by "ascending" y's, remember y grows downwards in screen space
-	if (*y0 > *y1) {
-		int_swap(y0, y1);
-		int_swap(x0, x1);
-		float_swap(z0, z1);
-		float_swap(w0, w1);
-		float_swap(u0, u1);
-		float_swap(v0, v1);
+	if (triangle->points[0].y > triangle->points[1].y) {
+		vec4_swap(&(triangle->points[0]), &(triangle->points[1]));
+		tex2_swap(&(triangle->tex_coords[0]), &(triangle->tex_coords[1]));
 	}
-	if (*y1 > *y2) {
-		int_swap(y1, y2);
-		int_swap(x1, x2);
-		float_swap(z1, z2);
-		float_swap(w1, w2);
-		float_swap(u1, u2);
-		float_swap(v1, v2);
+	if (triangle->points[1].y > triangle->points[2].y) {
+		vec4_swap(&(triangle->points[1]), &(triangle->points[2]));
+		tex2_swap(&(triangle->tex_coords[1]), &(triangle->tex_coords[2]));
 	}
-	if (*y0 > *y1) { // check again, previous may still not be in order
-		int_swap(y0, y1);
-		int_swap(x0, x1);
-		float_swap(z0, z1);
-		float_swap(w0, w1);
-		float_swap(u0, u1);
-		float_swap(v0, v1);
+	if (triangle->points[0].y > triangle->points[1].y) { // check again, previous may still not be in order
+		vec4_swap(&(triangle->points[0]), &(triangle->points[1]));
+		tex2_swap(&(triangle->tex_coords[0]), &(triangle->tex_coords[1]));
 	}
 }
 
 // top to flat bottom, (x0, y0) at top of triangle, other two being the bottom
-static void fill_flat_bottom_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color) {
-	int dx_1 = x1 - x0;
-	int dy_1 = y1 - y0;
-	float xstep_1 = (float) dx_1 / dy_1; // inverse slope, for every 1 increment in y, how much to step in x?
+static void fill_flat_bottom_triangle(const triangle_t* triangle) {
+	float dx_1 = roundf(triangle->points[1].x) - roundf(triangle->points[0].x);
+	float dy_1 = roundf(triangle->points[1].y) - roundf(triangle->points[0].y);
+	float xstep_1 = dx_1 / dy_1; // inverse slope, for every 1 increment in y, how much to step in x?
 
-	int dx_2 = x2 - x0;
-	int dy_2 = y2 - y0;
-	float xstep_2 = (float) dx_2 / dy_2; // inverse slope, for every 1 increment in y, how much to step in x?
+	float dx_2 = roundf(triangle->points[2].x) - roundf(triangle->points[0].x);
+	float dy_2 = roundf(triangle->points[2].y) - roundf(triangle->points[0].y);
+	float xstep_2 = dx_2 / dy_2; // inverse slope, for every 1 increment in y, how much to step in x?
 
-	float x_start = x0;
-	float x_end = x0;
-	for (int y = y0; y <= y1; y++) {
-		draw_line(roundf(x_start), y, roundf(x_end), y, color);
+	float x_start = roundf(triangle->points[0].x);
+	float x_end = x_start;
+
+	int y_start = roundf(triangle->points[0].y);
+	int y_end = roundf(triangle->points[1].y);
+
+	for (int y = y_start; y <= y_end; y++) {
+		draw_line(roundf(x_start), y, roundf(x_end), y, triangle->color);
 		x_start += xstep_1;
 		x_end += xstep_2;
 	}
 }
 
 // (x0, y0) and (x1, y1) being the two top vertices, (x2, y2) being the bottom vertex
-static void fill_flat_top_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color) {
-	int dx_1 = x2 - x0;
-	int dy_1 = y2 - y0;
-	float xstep_1 = (float) dx_1 / dy_1;
+static void fill_flat_top_triangle(const triangle_t* triangle) {
+	float dx_1 = roundf(triangle->points[2].x) - roundf(triangle->points[0].x);
+	float dy_1 = roundf(triangle->points[2].y) - roundf(triangle->points[0].y);
+	float xstep_1 = dx_1 / dy_1;
 
-	int dx_2 = x2 - x1;
-	int dy_2 = y2 - y1;
-	float xstep_2 = (float) dx_2 / dy_2;
+	float dx_2 = roundf(triangle->points[2].x) - roundf(triangle->points[1].x);
+	float dy_2 = roundf(triangle->points[2].y) - roundf(triangle->points[1].y);
+	float xstep_2 = dx_2 / dy_2;
 
-	float x_start = x2;
-	float x_end = x2;
-	for (int y = y2; y >= y0; y--) {
-		draw_line(roundf(x_start), y, roundf(x_end), y, color);
+	float x_start = roundf(triangle->points[2].x);
+	float x_end = x_start;
+
+	int y_start = roundf(triangle->points[2].y);
+	int y_end = roundf(triangle->points[0].y);
+
+	for (int y = y_start; y >= y_end; y--) {
+		draw_line(roundf(x_start), y, roundf(x_end), y, triangle->color);
+
 		x_start -= xstep_1;
 		x_end -= xstep_2;
 	}
 }
 
 // flat bottom flat top algorithm
-void draw_filled_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color) {
-	sort_coords_by_y(&x0, &y0, &x1, &y1, &x2, &y2);
-
+void draw_filled_triangle(triangle_t triangle) {
 	// already a flat bottom triangle 
-	if (y1 == y2) { 
-		fill_flat_bottom_triangle(x0, y0, x1, y1, x2, y2, color);
+	if (roundf(triangle.points[0].y) == roundf(triangle.points[2].y)) {
+		fill_flat_bottom_triangle(&triangle);
 		return;
 	}
 
 	// already a flat top triangle
-	if (y0 == y1) {
-		fill_flat_top_triangle(x0, y0, x1, y1, x2, y2, color);
+	if (roundf(triangle.points[0].y) == roundf(triangle.points[1].y)) {
+		fill_flat_top_triangle(&triangle);
 		return;
 	}
 
 	// Find that midpoint to divide into two triangles
-	int mx = roundf(x0 + (float) (x2 - x0) * (y1 - y0) / (y2 - y0)); // want float division
-	int my = y1;
+	float mx = triangle.points[0].x + (triangle.points[2].x - triangle.points[0].x)
+		* (triangle.points[1].y - triangle.points[0].y) / (triangle.points[2].y - triangle.points[0].y); 
+	float my = triangle.points[1].y;
 
-	fill_flat_bottom_triangle(x0, y0, x1, y1, mx, my, color);
-	fill_flat_top_triangle(x1, y1, mx, my, x2, y2, color);
+	triangle_t flat_bottom = triangle;
+	flat_bottom.points[2].x = mx;
+	flat_bottom.points[2].y = my;
+
+	triangle_t flat_top = triangle;
+	flat_top.points[0].x = triangle.points[1].x;
+	flat_top.points[0].y = triangle.points[1].y;
+	flat_top.points[1].x = mx;
+	flat_top.points[1].y = my;
+
+	fill_flat_bottom_triangle(&flat_bottom);
+	fill_flat_top_triangle(&flat_top);
 }
 
 static void affine_texture_flat_bottom_triangle(
@@ -245,7 +219,7 @@ void draw_affine_textured_triangle(
 	int x1, int y1, float u1, float v1, 
 	int x2, int y2, float u2, float v2, 
 	uint32_t* texture) {
-	sort_uv_and_coords_by_y(&x0, &y0, &u0, &v0, &x1, &y1, &u1, &v1, &x2, &y2, & u2, &v2);
+	//sort_uv_and_coords_by_y(&x0, &y0, &u0, &v0, &x1, &y1, &u1, &v1, &x2, &y2, & u2, &v2);
 
 	// already flat bottom
 	if (y1 == y2) {
@@ -351,18 +325,19 @@ static void texture_flat_top_triangle(
 	}
 }
 
+typedef struct {
+	int x0; int y0; float z0; float w0; float u0; float v0;
+	int x1; int y1; float z1; float w1; float u1; float v1;
+	int x2; int y2; float z2; float w2; float u2; float v2;
+	uint32_t* texture;
+} texture_thread_data;
+
 void draw_textured_triangle(
 	int x0, int y0, float z0, float w0, float u0, float v0, 
 	int x1, int y1, float z1, float w1, float u1, float v1, 
 	int x2, int y2, float z2, float w2, float u2, float v2, 
 	uint32_t* texture) 
 {	
-	sort_all_by_y(
-		&x0, &y0, &z0, &w0, &u0, &v0,
-		&x1, &y1, &z1, &w1, &u1, &v1,
-		&x2, &y2, &z2, &w2, &u2, &v2);
-
-
 	// already flat bottom
 	if (y1 == y2) {
 		texture_flat_bottom_triangle(
@@ -382,6 +357,15 @@ void draw_textured_triangle(
 			texture);
 		return;
 	}
+
+	/*texture_thread_data args = { 
+		x0, y0, z0, w0, u0, v0,
+			x1, y1, z1, w1, u1, v1,
+			x2, y2, z2, w2, u2, v2,
+			texture };
+
+	SDL_CreateThread(texture_flat_bottom_triangle, "flat_bottom_thread", &args);
+	SDL_CreateThread(texture_flat_bottom_triangle, "flat_top_thread", &args);*/
 	
 	texture_flat_bottom_triangle(
 		x0, y0, z0, w0, u0, v0,

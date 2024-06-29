@@ -1,5 +1,6 @@
-#include <stdlib.h>
 #include "array.h"
+
+#include <stdlib.h>
 
 // Gonna store the capacity of the array and it's currently "occupied" size in the 4*2 bytes before the array, called a "header"
 #define ARRAY_RAW_DATA(array) ((int*)(array) - 2) // Grab 2 int sized spots

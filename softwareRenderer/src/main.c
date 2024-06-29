@@ -98,9 +98,9 @@ static void update(void) {
 	// Reset triangles
 	triangles_to_render = NULL;
 
-	//mesh.rotation.x += 0.01f;
+	mesh.rotation.x += 0.01f;
 	mesh.rotation.y += 0.01f;
-	//mesh.rotation.z += 0.01f;
+	mesh.rotation.z += 0.01f;
 
 	//mesh.scale.x += 0.001f;
 
@@ -227,6 +227,7 @@ static void render(void) {
 	int num_triangles = array_size(triangles_to_render);
 	for (int i = 0; i < num_triangles; i++) {
 		triangle_t triangle = triangles_to_render[i];
+		sort_triangle_by_y(&triangle); // Rasterization method requires vertices to run from top to bottom
 		
 		// Draw Textured Triangles
 		if (render_mode == RENDER_TEXTURE || render_mode == RENDER_TEXTURE_WIRE) {
@@ -239,14 +240,7 @@ static void render(void) {
 
 		// Draw Filled Triangles
 		if (render_mode == RENDER_FILL || render_mode == RENDER_FILL_WIRE) {
-			draw_filled_triangle(
-				triangle.points[0].x,
-				triangle.points[0].y,
-				triangle.points[1].x,
-				triangle.points[1].y,
-				triangle.points[2].x,
-				triangle.points[2].y, 
-				triangle.color);
+			draw_filled_triangle(triangle);
 		}
 
 		// Draw Unfilled Triangles

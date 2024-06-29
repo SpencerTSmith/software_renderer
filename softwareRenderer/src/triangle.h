@@ -2,9 +2,10 @@
 #define TRIANGLE_H
 
 #include "vector.h"
+#include "texture.h"
+
 #include <stdlib.h>
 #include <stdint.h>
-#include "texture.h"
 
 // Face vertices index, clockwise
 typedef struct {
@@ -25,16 +26,16 @@ typedef struct {
 	float avg_depth;
 } triangle_t;
 
-void draw_filled_triangle(
-	int x0, int y0, 
-	int x1, int y1, 
-	int x2, int y2, 
-	uint32_t color);
+void sort_triangle_by_y(triangle_t* triangle);
+
+void draw_filled_triangle(triangle_t triangle);
+
 void draw_affine_textured_triangle(
 	int x0, int y0, float u0, float v0, 
 	int x1, int y1, float u1, float v1, 
 	int x2, int y2, float u2, float v2, 
 	uint32_t* texture);
+
 void draw_textured_triangle(
 	int x0, int y0, float z0, float w0, float u0, float v0,
 	int x1, int y1, float z1, float w1, float u1, float v1,

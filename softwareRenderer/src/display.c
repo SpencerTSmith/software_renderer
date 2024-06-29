@@ -1,4 +1,5 @@
 #include "display.h"
+
 #include <stdio.h>
 
 SDL_Window* window = NULL;

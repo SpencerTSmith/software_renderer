@@ -1,8 +1,11 @@
 #include "texture.h"
+
 #include <stdio.h>
 #include <string.h>
+
 #include "vector.h"
 #include "display.h"
+
 #include "utilities/upng.h"
 
 int texture_width = 64;

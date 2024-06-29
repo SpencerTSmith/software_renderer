@@ -1,5 +1,7 @@
 #include "mesh.h"
+
 #include "array.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 

@@ -1,5 +1,6 @@
-#include <math.h>
 #include "vector.h"
+
+#include <math.h>
 
 
 float vec2_length(vec2_t v) {

@@ -1,4 +1,5 @@
 #include "light.h"
+
 #include <math.h>
 
 float clamp_light_factor(float light_factor, float min, float max) {
