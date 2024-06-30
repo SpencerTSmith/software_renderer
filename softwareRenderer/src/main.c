@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdint.h>
+
 #include <SDL.h>
-#include <stdbool.h>
+
 #include "array.h"
 #include "display.h"
 #include "vector.h"
@@ -22,7 +23,7 @@ static int previous_frame_time = 0;
 
 // Color buffer initialization, other setups too
 static void setup(void) {
-	render_mode = RENDER_TEXTURE;	// default render mode
+	render_mode = RENDER_WIRE_FRAME;	// default render mode
 	cull_mode = CULL_BACKFACE;	// default cull mode
 
 	// Memory for color buffer
@@ -31,6 +32,9 @@ static void setup(void) {
 		fprintf(stderr, "Error creating color buffer.\n");
 		is_running = false;
 	}
+
+	// Memory for z buffer
+	w_buffer = (float*) malloc(sizeof(float) * window_width * window_height);
 
 	// SDL texture for rendering buffer from memory
 	color_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
@@ -45,14 +49,11 @@ static void setup(void) {
 	float zfar = 100.0f;
 	projection_matrix = mat4_make_perspective(fov, inv_aspect, znear, zfar);
 
-	//mesh.rotation.y = M_PI / 4;
-
-	// Load hard coded redbrick texture
 	//load_redbrick_mesh_texture();
 	//load_cube_mesh_data();
 	
-	load_png_texture_data("./assets/cube.png");
-	load_obj_file_data("./assets/f22.obj");
+	load_png_texture_data("./assets/f117.png");
+	load_obj_file_data("./assets/f117.obj");
 }
 
 // Poll for input while running
@@ -80,6 +81,10 @@ static void process_input(void) {
 				render_mode = RENDER_TEXTURE_WIRE;
 			if (event.key.keysym.sym == SDLK_6)
 				render_mode = RENDER_TEXTURE;
+			
+			
+			if (event.key.keysym.sym == SDLK_p)
+				render_mode = RENDER_TEXTURE_PS1;
 
 			if (event.key.keysym.sym == SDLK_c)
 				cull_mode = cull_mode == CULL_BACKFACE ? CULL_NONE : CULL_BACKFACE;
@@ -100,8 +105,8 @@ static void update(void) {
 	triangles_to_render = NULL;
 
 	mesh.rotation.x += 0.01f;
-	mesh.rotation.y += 0.01f;
-	mesh.rotation.z += 0.01f;
+	//mesh.rotation.y += 0.01f;
+	//mesh.rotation.z += 0.01f;
 
 	//mesh.scale.x += 0.001f;
 
@@ -117,11 +122,11 @@ static void update(void) {
 
 	// Combine all transforms, scale, rotate, translate, in that order
 	mat4_t world_matrix = mat4_identity();
-	world_matrix = mat4_mul_mat4(scale_matrix, world_matrix);
-	world_matrix = mat4_mul_mat4(rotation_matrix_z, world_matrix);
-	world_matrix = mat4_mul_mat4(rotation_matrix_y, world_matrix);
-	world_matrix = mat4_mul_mat4(rotation_matrix_x, world_matrix);
-	world_matrix = mat4_mul_mat4(translation_matrix, world_matrix);
+	world_matrix = mat4_mul_mat4(&scale_matrix, &world_matrix);
+	world_matrix = mat4_mul_mat4(&rotation_matrix_z, &world_matrix);
+	world_matrix = mat4_mul_mat4(&rotation_matrix_y, &world_matrix);
+	world_matrix = mat4_mul_mat4(&rotation_matrix_x, &world_matrix);
+	world_matrix = mat4_mul_mat4(&translation_matrix, &world_matrix);
 
 	// Loop faces first, get vertices from faces, project triangle, add to array
 	int num_faces = array_size(mesh.faces);
@@ -140,14 +145,11 @@ static void update(void) {
 		for (int j = 0; j < 3; j++) {
 			vec4_t transformed_vertex = vec3_to_vec4(face_vertices[j]);
 
-			transformed_vertex = mat4_mul_vec4(world_matrix, transformed_vertex);
+			transformed_vertex = mat4_mul_vec4(&world_matrix, transformed_vertex);
 
 			transformed_vertices[j] = transformed_vertex;
 		}
 
-		// Not necessary to divide by 3 here, does not change relative ordering
-		float avg_z = transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z;
-		
 		// Calculate normal of face for purposes of lighting and culling
 		vec3_t A = vec4_to_vec3(transformed_vertices[0]);
 		vec3_t B = vec4_to_vec3(transformed_vertices[1]);
@@ -171,11 +173,14 @@ static void update(void) {
 		float light_alignment = -vec3_dot(global_light.direction, face_normal); // Negative because pointing at the light means more light
 		uint32_t shaded_color = light_apply_intensity(mesh_face.color, light_alignment); 
 
+		// Not necessary to divide by 3 here, does not change relative ordering
+		float avg_z = transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z;
+
 		// Project into 2d points, but still saving the new "adjusted" z, and original z in w
 		vec4_t projected_vertices[3];
 		for (int j = 0; j < 3; j++) {
 			// Project to screen space
-			vec4_t projected_vertex = mat4_mul_vec4_project(projection_matrix, transformed_vertices[j]);
+			vec4_t projected_vertex = mat4_mul_vec4_project(&projection_matrix, transformed_vertices[j]);
 
 			// Scale it up
 			projected_vertex.x *= (window_width / 2.f);
@@ -209,19 +214,12 @@ static void update(void) {
 	}
 
 	// Sort for painters algorithm, like the old days when memory was more expensive, just bubble sort
-	size_t num_triangles = array_size(triangles_to_render);
-	if (triangles_to_render) {
-		qsort(triangles_to_render, num_triangles, sizeof(*triangles_to_render), triangle_painter_compare);
+	if (render_mode == RENDER_TEXTURE_PS1) {
+		size_t num_triangles = array_size(triangles_to_render);
+		if (triangles_to_render) {
+			qsort(triangles_to_render, num_triangles, sizeof(*triangles_to_render), triangle_painter_compare);
+		}
 	}
-	//for (int i = 0; i < num_triangles; i++) {
-	//	for (int j = i; j < num_triangles; j++) {
-	//		if (triangles_to_render[i].avg_depth < triangles_to_render[j].avg_depth) {
-	//			triangle_t temp = triangles_to_render[i];
-	//			triangles_to_render[i] = triangles_to_render[j];
-	//			triangles_to_render[j] = temp;
-	//		}
-	//	}
-	//}
 }
 
 // Might be thought of as our rasterizer and fragment shader
@@ -233,9 +231,10 @@ static void render(void) {
 		triangle_t triangle = triangles_to_render[i];
 		sort_triangle_by_y(&triangle); // Rasterization method requires vertices to run from top to bottom
 		
+
 		// Draw Textured Triangles
 		if (render_mode == RENDER_TEXTURE || render_mode == RENDER_TEXTURE_WIRE) {
-			draw_textured_triangle(triangle, mesh_texture);
+			draw_textured_triangle(triangle, mesh_texture); //passing triangle by reference causes some to not be rendered
 		}
 
 		// Draw Filled Triangles
@@ -244,7 +243,8 @@ static void render(void) {
 		}
 
 		// Draw Unfilled Triangles
-		if (render_mode == RENDER_WIRE_FRAME || render_mode == RENDER_WIRE_VERTS || render_mode == RENDER_FILL_WIRE || render_mode == RENDER_TEXTURE_WIRE) {
+		if (render_mode == RENDER_WIRE_FRAME || render_mode == RENDER_WIRE_VERTS || 
+			render_mode == RENDER_FILL_WIRE || render_mode == RENDER_TEXTURE_WIRE) {
 			draw_triangle(
 				triangle.points[0].x,
 				triangle.points[0].y,
@@ -252,14 +252,19 @@ static void render(void) {
 				triangle.points[1].y,
 				triangle.points[2].x,
 				triangle.points[2].y, 
-				0xFFFFFFF);
+				0xFF0000FF);
 		}
 
 		// Draw Vertices
 		if (render_mode == RENDER_WIRE_VERTS) {
 			for (int j = 0; j < 3; j++) {
-				draw_rectangle(triangle.points[j].x - 3, triangle.points[j].y - 3, 6, 6, 0xFF00FF00);
+				draw_rectangle(triangle.points[j].x - 3, triangle.points[j].y - 3, 6, 6, 0xFF0000FF);
 			}
+		}
+
+		// SECRET!
+		if (render_mode == RENDER_TEXTURE_PS1) {
+			draw_affine_textured_triangle(triangle, mesh_texture);
 		}
 	}
 
@@ -268,13 +273,15 @@ static void render(void) {
 
 	render_color_buffer();
 	clear_color_buffer(0xFF000000);
+	clear_w_buffer();
 
 	SDL_RenderPresent(renderer);
 }
 
 static void free_resources(void) {
-	texture_free(mesh_texture);
 	free(color_buffer);
+	free(w_buffer);
+	texture_free(mesh_texture);
 	array_free(mesh.faces);
 	array_free(mesh.vertices);
 }

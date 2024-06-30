@@ -145,12 +145,10 @@ void draw_affine_texel(int x, int y, vec2_t a, vec2_t b, vec2_t c, tex2_t a_uv, 
         .v = a_uv.v * alpha + b_uv.v * beta + c_uv.v * gamma
     };
 
-    int tex_x = abs(roundf(interp.u * texture_width));
-    int tex_y = abs(roundf(interp.v * texture_height));
+    int tex_x = abs(roundf(interp.u * texture_width)) % texture_width;
+    int tex_y = abs(roundf(interp.v * texture_height)) % texture_height;
 
     int index = tex_y * texture_width + tex_x;
-    if (index > texture_width * texture_height)
-        return;
 
     draw_pixel(x, y, texture[index]);
 }
@@ -186,5 +184,10 @@ void draw_texel(int x, int y, vec4_t a, vec4_t b, vec4_t c, tex2_t a_uv, tex2_t 
 
     int index = tex_y * texture_width + tex_x;
 
-    draw_pixel(x, y, texture[index]);
+    // Only draw the pixel if depth value is greater (closer) than already there
+    //  Remember 1/w will grow bigger when z is lower (closer)
+    if (interp_inv_w > w_buffer[window_width * y + x]) {
+        draw_pixel(x, y, texture[index]);
+        w_buffer[window_width * y + x] = interp_inv_w;
+    }
 }

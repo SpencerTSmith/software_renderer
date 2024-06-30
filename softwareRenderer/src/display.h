@@ -14,7 +14,8 @@ enum render_mode {
 	RENDER_FILL,
 	RENDER_FILL_WIRE,
 	RENDER_TEXTURE,
-	RENDER_TEXTURE_WIRE
+	RENDER_TEXTURE_WIRE,
+	RENDER_TEXTURE_PS1
 } render_mode;
 
 enum cull_mode {
@@ -28,6 +29,7 @@ extern int window_width;
 extern int window_height;
 
 extern uint32_t* color_buffer;
+extern float* w_buffer;
 extern SDL_Texture* color_buffer_texture;
 
 // initialize all SDL components for drawing on screen.
@@ -42,6 +44,8 @@ void draw_rectangle(int xpos, int ypos, int width, int height, uint32_t color);
 
 // draw color buffer to SDL texture
 void render_color_buffer(void);
+
 void clear_color_buffer(uint32_t color);
+void clear_w_buffer(void);
 
 #endif

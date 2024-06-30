@@ -80,18 +80,18 @@ mat4_t mat4_make_perspective(float fov, float inv_aspect, float znear, float zfa
 	return p;
 }
 
-vec4_t mat4_mul_vec4(mat4_t m, vec4_t v) {
+vec4_t mat4_mul_vec4(const mat4_t* m, vec4_t v) {
 	vec4_t result = {
-		.x = m.m[0][0] * v.x + m.m[0][1] * v.y + m.m[0][2] * v.z + m.m[0][3] * v.w,
-		.y = m.m[1][0] * v.x + m.m[1][1] * v.y + m.m[1][2] * v.z + m.m[1][3] * v.w,
-		.z = m.m[2][0] * v.x + m.m[2][1] * v.y + m.m[2][2] * v.z + m.m[2][3] * v.w,
-		.w = m.m[3][0] * v.x + m.m[3][1] * v.y + m.m[3][2] * v.z + m.m[3][3] * v.w
+		.x = m->m[0][0] * v.x + m->m[0][1] * v.y + m->m[0][2] * v.z + m->m[0][3] * v.w,
+		.y = m->m[1][0] * v.x + m->m[1][1] * v.y + m->m[1][2] * v.z + m->m[1][3] * v.w,
+		.z = m->m[2][0] * v.x + m->m[2][1] * v.y + m->m[2][2] * v.z + m->m[2][3] * v.w,
+		.w = m->m[3][0] * v.x + m->m[3][1] * v.y + m->m[3][2] * v.z + m->m[3][3] * v.w
 	};
 
 	return result;
 }
 
-vec4_t mat4_mul_vec4_project(mat4_t p, vec4_t v) {
+vec4_t mat4_mul_vec4_project(const mat4_t* p, vec4_t v) {
 	vec4_t result = mat4_mul_vec4(p, v); // normal multiplication
 
 	// Perspective divide by original z (stored in w), making sure to avoid div by zero
@@ -104,14 +104,14 @@ vec4_t mat4_mul_vec4_project(mat4_t p, vec4_t v) {
 	return result;
 }
 
-mat4_t mat4_mul_mat4(mat4_t a, mat4_t b) {
+mat4_t mat4_mul_mat4(const mat4_t* a, const mat4_t* b) {
 	mat4_t result;
 
 	for (int row = 0; row < 4; row++) {
 		for (int col = 0; col < 4; col++) {
 			float dot = 0.0f;
 			for (int i = 0; i < 4; i++) {
-				dot += a.m[row][i] * b.m[i][col];
+				dot += a->m[row][i] * b->m[i][col];
 			}
 			result.m[row][col] = dot;
 		}
