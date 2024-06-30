@@ -12,7 +12,9 @@
 #include "texture.h"
 #include "triangle.h"
 
-triangle_t* triangles_to_render = NULL;
+#define MAX_TRIANGLES 4096
+triangle_t triangles_to_render[MAX_TRIANGLES];
+int num_triangles;
 
 vec3_t camera_position = { 0, 0, 0 };
 mat4_t projection_matrix;
@@ -52,8 +54,8 @@ static void setup(void) {
 	//load_redbrick_mesh_texture();
 	//load_cube_mesh_data();
 	
-	load_png_texture_data("./assets/f117.png");
-	load_obj_file_data("./assets/f117.obj");
+	load_png_texture_data("./assets/cube.png");
+	load_obj_file_data("./assets/cube.obj");
 }
 
 // Poll for input while running
@@ -101,11 +103,11 @@ static void update(void) {
 	}
 	previous_frame_time = SDL_GetTicks();
 
-	// Reset triangles
-	triangles_to_render = NULL;
+	// Clear our triangles to render
+	num_triangles = 0;
 
 	mesh.rotation.x += 0.01f;
-	//mesh.rotation.y += 0.01f;
+	mesh.rotation.y -= 0.01f;
 	//mesh.rotation.z += 0.01f;
 
 	//mesh.scale.x += 0.001f;
@@ -140,7 +142,7 @@ static void update(void) {
 			mesh.vertices[mesh_face.c]
 		};
 
-		// Transform vertices
+		// Transform vertices to world space
 		vec4_t transformed_vertices[3];
 		for (int j = 0; j < 3; j++) {
 			vec4_t transformed_vertex = vec3_to_vec4(face_vertices[j]);
@@ -209,16 +211,14 @@ static void update(void) {
 			.avg_depth = avg_z
 		};
 
-		// Save that triangle for rendering, in dynamic
-		array_push(triangles_to_render, projected_triangle);
+		if (num_triangles < MAX_TRIANGLES) {
+			triangles_to_render[num_triangles++] = projected_triangle;
+		}
 	}
 
 	// Sort for painters algorithm, like the old days when memory was more expensive, just bubble sort
 	if (render_mode == RENDER_TEXTURE_PS1) {
-		size_t num_triangles = array_size(triangles_to_render);
-		if (triangles_to_render) {
-			qsort(triangles_to_render, num_triangles, sizeof(*triangles_to_render), triangle_painter_compare);
-		}
+		qsort(triangles_to_render, num_triangles, sizeof(*triangles_to_render), triangle_painter_compare);
 	}
 }
 
@@ -226,7 +226,6 @@ static void update(void) {
 static void render(void) {
 	draw_grid(0xFF808080);
 
-	int num_triangles = array_size(triangles_to_render);
 	for (int i = 0; i < num_triangles; i++) {
 		triangle_t triangle = triangles_to_render[i];
 		sort_triangle_by_y(&triangle); // Rasterization method requires vertices to run from top to bottom
@@ -268,10 +267,8 @@ static void render(void) {
 		}
 	}
 
-	// Done with this set of triangles
-	array_free(triangles_to_render);
-
 	render_color_buffer();
+
 	clear_color_buffer(0xFF000000);
 	clear_w_buffer();
 

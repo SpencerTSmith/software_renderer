@@ -100,7 +100,6 @@ static void fill_flat_bottom_triangle(const triangle_t* triangle) {
 		x_start += xstep_1;
 		x_end += xstep_2;
 	}
-
 }
 
 static void fill_flat_top_triangle(const triangle_t* triangle) {
@@ -154,35 +153,6 @@ void draw_filled_triangle(triangle_t triangle) {
 
 	fill_flat_bottom_triangle(&triangle);
 	fill_flat_top_triangle(&triangle);
-	//// already a flat bottom triangle 
-	//if (roundf(triangle.points[0].y) == roundf(triangle.points[2].y)) {
-	//	fill_flat_bottom_triangle(&triangle);
-	//	return;
-	//}
-
-	//// already a flat top triangle
-	//if (roundf(triangle.points[0].y) == roundf(triangle.points[1].y)) {
-	//	fill_flat_top_triangle(&triangle);
-	//	return;
-	//}
-
-	//// Find that midpoint to divide into two triangles
-	//float mx = triangle.points[0].x + (triangle.points[2].x - triangle.points[0].x)
-	//	* (triangle.points[1].y - triangle.points[0].y) / (triangle.points[2].y - triangle.points[0].y); 
-	//float my = triangle.points[1].y;
-
-	//triangle_t flat_bottom = triangle;
-	//flat_bottom.points[2].x = mx;
-	//flat_bottom.points[2].y = my;
-
-	//triangle_t flat_top = triangle;
-	//flat_top.points[0].x = triangle.points[1].x;
-	//flat_top.points[0].y = triangle.points[1].y;
-	//flat_top.points[1].x = mx;
-	//flat_top.points[1].y = my;
-
-	//fill_flat_bottom_triangle(&flat_bottom);
-	//fill_flat_top_triangle(&flat_top);
 }
 
 static void affine_texture_flat_bottom_triangle(const triangle_t* triangle, uint32_t* texture) {
