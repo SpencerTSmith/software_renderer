@@ -5,7 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define FPS 60
+#define FPS 240
 #define FRAME_TARGET_TIME (1000 / FPS) 
 
 enum render_mode {

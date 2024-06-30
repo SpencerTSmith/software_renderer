@@ -22,7 +22,7 @@ static int previous_frame_time = 0;
 
 // Color buffer initialization, other setups too
 static void setup(void) {
-	render_mode = RENDER_FILL;	// default render mode
+	render_mode = RENDER_TEXTURE;	// default render mode
 	cull_mode = CULL_BACKFACE;	// default cull mode
 
 	// Memory for color buffer
@@ -45,13 +45,14 @@ static void setup(void) {
 	float zfar = 100.0f;
 	projection_matrix = mat4_make_perspective(fov, inv_aspect, znear, zfar);
 
+	//mesh.rotation.y = M_PI / 4;
+
 	// Load hard coded redbrick texture
 	//load_redbrick_mesh_texture();
+	//load_cube_mesh_data();
 	
 	load_png_texture_data("./assets/cube.png");
-	//load_cube_mesh_data();
-
-	load_obj_file_data("./assets/cube.obj");
+	load_obj_file_data("./assets/f22.obj");
 }
 
 // Poll for input while running
@@ -144,7 +145,7 @@ static void update(void) {
 			transformed_vertices[j] = transformed_vertex;
 		}
 
-		// Not necessary to divide by 3 here
+		// Not necessary to divide by 3 here, does not change relative ordering
 		float avg_z = transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z;
 		
 		// Calculate normal of face for purposes of lighting and culling
@@ -167,7 +168,7 @@ static void update(void) {
 		// Flat shading
 		vec3_normalize(&global_light.direction);
 		vec3_normalize(&face_normal);
-		float light_alignment = -(vec3_dot(global_light.direction, face_normal)); // Negative because pointing at the light means more light
+		float light_alignment = -vec3_dot(global_light.direction, face_normal); // Negative because pointing at the light means more light
 		uint32_t shaded_color = light_apply_intensity(mesh_face.color, light_alignment); 
 
 		// Project into 2d points, but still saving the new "adjusted" z, and original z in w
@@ -184,7 +185,7 @@ static void update(void) {
 			projected_vertex.x += (window_width / 2.f);
 			projected_vertex.y += (window_height / 2.f);
 
-			// Save that point into triangle
+			// Save that point
 			projected_vertices[j] = projected_vertex;
 		}
 
@@ -231,11 +232,7 @@ static void render(void) {
 		
 		// Draw Textured Triangles
 		if (render_mode == RENDER_TEXTURE || render_mode == RENDER_TEXTURE_WIRE) {
-			draw_textured_triangle(
-				triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w, triangle.tex_coords[0].u, triangle.tex_coords[0].v,
-				triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w, triangle.tex_coords[1].u, triangle.tex_coords[1].v,
-				triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w, triangle.tex_coords[2].u, triangle.tex_coords[2].v,
-				mesh_texture);
+			draw_textured_triangle(triangle, mesh_texture);
 		}
 
 		// Draw Filled Triangles
@@ -252,7 +249,7 @@ static void render(void) {
 				triangle.points[1].y,
 				triangle.points[2].x,
 				triangle.points[2].y, 
-				0xFF00FF00);
+				0xFFFFFFF);
 		}
 
 		// Draw Vertices

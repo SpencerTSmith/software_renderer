@@ -121,8 +121,13 @@ vec3_t barycentric_weights(vec2_t a, vec2_t b, vec2_t c, vec2_t p) {
     float ac_cross_ap = vec2_cross(ac, ap);
 
     float alpha = pc_cross_pb / ac_cross_ab;
+    alpha = alpha > 1.0f ? 1.0f : alpha < 0.0f ? 0.0f : alpha;
+
     float beta = ac_cross_ap / ac_cross_ab;
+    beta = beta > 1.0f ? 1.0f : beta < 0.0f ? 0.0f : beta;
+
     float gamma = 1.0f - alpha - beta;
+    gamma = gamma > 1.0f ? 1.0f : gamma < 0.0f ? 0.0f : gamma;
 
     vec3_t weights = { alpha, beta, gamma };
     return weights;

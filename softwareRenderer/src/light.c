@@ -2,7 +2,7 @@
 
 #include <math.h>
 
-float clamp_light_factor(float light_factor, float min, float max) {
+static float clamp_light_factor(float light_factor, float min, float max) {
 	const float result = light_factor < min ? min : light_factor;
 	return result > max ? max : result;
 }

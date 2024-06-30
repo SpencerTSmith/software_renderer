@@ -31,6 +31,7 @@ static void tex2_swap(tex2_t* a, tex2_t* b) {
 	*b = temp;
 }
 
+// Does change the triangle, not const
 void sort_triangle_by_y(triangle_t* triangle) {
 	// sort vertex coordinates by "ascending" y's, remember y grows downwards in screen space
 	if (triangle->points[0].y > triangle->points[1].y) {
@@ -57,7 +58,7 @@ static void fill_flat_bottom_triangle(const triangle_t* triangle) {
 	float dy_2 = roundf(triangle->points[2].y) - roundf(triangle->points[0].y);
 	float xstep_2 = dx_2 / dy_2; // inverse slope, for every 1 increment in y, how much to step in x?
 
-	float x_start = roundf(triangle->points[0].x);
+	float x_start = triangle->points[0].x;
 	float x_end = x_start;
 
 	int y_start = roundf(triangle->points[0].y);
@@ -80,7 +81,7 @@ static void fill_flat_top_triangle(const triangle_t* triangle) {
 	float dy_2 = roundf(triangle->points[2].y) - roundf(triangle->points[1].y);
 	float xstep_2 = dx_2 / dy_2;
 
-	float x_start = roundf(triangle->points[2].x);
+	float x_start = triangle->points[2].x;
 	float x_end = x_start;
 
 	int y_start = roundf(triangle->points[2].y);
@@ -125,6 +126,12 @@ void draw_filled_triangle(triangle_t triangle) {
 
 	fill_flat_bottom_triangle(&flat_bottom);
 	fill_flat_top_triangle(&flat_top);
+
+	// Draw both at same time... small test of multithreading... after testing: this is literally slower
+	//SDL_Thread* bottom_thread = SDL_CreateThread(fill_flat_bottom_triangle, "flat_bottom", &flat_bottom);
+	//SDL_Thread* top_thread = SDL_CreateThread(fill_flat_top_triangle, "flat_top", &flat_top);
+	//SDL_WaitThread(bottom_thread, NULL);
+	//SDL_WaitThread(top_thread, NULL);
 }
 
 static void affine_texture_flat_bottom_triangle(
@@ -237,30 +244,34 @@ void draw_affine_textured_triangle(
 	affine_texture_flat_top_triangle(x0, y0, u0, v0, x1, y1, u1, v1, x2, y2, u2, v2, texture);
 }
 
-static void texture_flat_bottom_triangle(
-	int x0, int y0, float z0, float w0, float u0, float v0,
-	int x1, int y1, float z1, float w1, float u1, float v1,
-	int x2, int y2, float z2, float w2, float u2, float v2,
-	uint32_t* texture) {
-	vec4_t a = { x0, y0, z0, w0, };
-	vec4_t b = { x1, y1, z1, w1, };
-	vec4_t c = { x2, y2, z2, w2 };
+typedef struct {
+	triangle_t triangle;
+	uint32_t* texture;
+} tex_thread_data;
 
-	tex2_t a_uv = { u0, v0 };
-	tex2_t b_uv = { u1, v1 };
-	tex2_t c_uv = { u2, v2 };
+static void texture_flat_bottom_triangle(const tex_thread_data* data) {
+	const triangle_t* triangle = &(data->triangle);
+	const uint32_t* texture = data->texture;
 
-	int dx_1 = x1 - x0;
-	int dy_1 = y1 - y0;
-	float xstep_1 = (float)dx_1 / dy_1; // inverse slope, for every 1 increment in y, how much to step in x?
+	vec4_t a = triangle->points[0];
+	vec4_t b = triangle->points[1];
+	vec4_t c = triangle->points[2];
 
-	int dx_2 = x2 - x0;
-	int dy_2 = y2 - y0;
-	float xstep_2 = (float)dx_2 / dy_2; // inverse slope, for every 1 increment in y, how much to step in x?
+	tex2_t a_uv = triangle->tex_coords[0];
+	tex2_t b_uv = triangle->tex_coords[1];
+	tex2_t c_uv = triangle->tex_coords[2];
 
-	float x_start = x0;
-	float x_end = x0;
-	for (int y = y0; y <= y1; y++) {
+	float dx_1 = roundf(b.x) - roundf(a.x);
+	float dy_1 = roundf(b.y) - roundf(a.y);
+	float xstep_1 = dx_1 / dy_1; // inverse slope, for every 1 increment in y, how much to step in x?
+
+	float dx_2 = roundf(c.x) - roundf(a.x);
+	float dy_2 = roundf(c.y) - roundf(a.y);
+	float xstep_2 = dx_2 / dy_2; // inverse slope, for every 1 increment in y, how much to step in x?
+
+	float x_start = roundf(a.x);
+	float x_end = x_start;
+	for (int y = roundf(a.y); y <= roundf(b.y); y++) {
 		// If we're rotated the other way, lets swap so we are still drawing left to right
 		if (x_end < x_start) {
 			float_swap(&x_start, &x_end);
@@ -281,30 +292,29 @@ static void texture_flat_bottom_triangle(
 	}
 }
 
-static void texture_flat_top_triangle(
-	int x0, int y0, float z0, float w0, float u0, float v0,
-	int x1, int y1, float z1, float w1, float u1, float v1,
-	int x2, int y2, float z2, float w2, float u2, float v2,
-	uint32_t* texture) {
-	vec4_t a = { x0, y0, z0, w0 };
-	vec4_t b = { x1, y1, z1, w1 };
-	vec4_t c = { x2, y2, z2, w2 };
+static void texture_flat_top_triangle(const tex_thread_data* data) {
+	const triangle_t* triangle = &(data->triangle);
+	const uint32_t* texture = data->texture;
 
-	tex2_t a_uv = { u0, v0 };
-	tex2_t b_uv = { u1, v1 };
-	tex2_t c_uv = { u2, v2 };
+	vec4_t a = triangle->points[0]; 
+	vec4_t b = triangle->points[1];
+	vec4_t c = triangle->points[2];
 
-	int dx_1 = x2 - x1;
-	int dy_1 = y2 - y1;
-	float xstep_1 = (float)dx_1 / dy_1;
+	tex2_t a_uv = triangle->tex_coords[0];
+	tex2_t b_uv = triangle->tex_coords[1];
+	tex2_t c_uv = triangle->tex_coords[2];
 
-	int dx_2 = x2 - x0;
-	int dy_2 = y2 - y0;
-	float xstep_2 = (float)dx_2 / dy_2;
+	float dx_1 = roundf(c.x) - roundf(b.x);
+	float dy_1 = roundf(c.y) - roundf(b.y);
+	float xstep_1 = dx_1 / dy_1;
 
-	float x_start = x2;
-	float x_end = x2;
-	for (int y = y2; y >= y1; y--) {
+	float dx_2 = roundf(c.x) - roundf(a.x);
+	float dy_2 = roundf(c.y) - roundf(a.y);
+	float xstep_2 = dx_2 / dy_2;
+
+	float x_start = roundf(c.x);
+	float x_end = x_start;
+	for (int y = roundf(c.y); y >= roundf(b.y); y--) {
 		// If we're rotated the other way, lets swap so we are still drawing left to right
 		if (x_end < x_start) {
 			float_swap(&x_start, &x_end);
@@ -325,56 +335,25 @@ static void texture_flat_top_triangle(
 	}
 }
 
-typedef struct {
-	int x0; int y0; float z0; float w0; float u0; float v0;
-	int x1; int y1; float z1; float w1; float u1; float v1;
-	int x2; int y2; float z2; float w2; float u2; float v2;
-	uint32_t* texture;
-} texture_thread_data;
-
-void draw_textured_triangle(
-	int x0, int y0, float z0, float w0, float u0, float v0, 
-	int x1, int y1, float z1, float w1, float u1, float v1, 
-	int x2, int y2, float z2, float w2, float u2, float v2, 
-	uint32_t* texture) 
-{	
+void draw_textured_triangle(triangle_t triangle, uint32_t* texture) {
 	// already flat bottom
-	if (y1 == y2) {
-		texture_flat_bottom_triangle(
-			x0, y0, z0, w0, u0, v0,
-			x1, y1, z1, w1, u1, v1,
-			x2, y2, z2, w2, u2, v2,
-			texture);
+	tex_thread_data args = { .triangle = triangle, .texture = texture };
+	if (roundf(triangle.points[1].y) == roundf(triangle.points[2].y)) {
+		texture_flat_bottom_triangle(&args);
 		return;
 	}
 
 	// already flat top
-	if (y0 == y1) {
-		texture_flat_top_triangle(
-			x0, y0, z0, w0, u0, v0,
-			x1, y1, z1, w1, u1, v1,
-			x2, y2, z2, w2, u2, v2,
-			texture);
+	if (roundf(triangle.points[0].y) == roundf(triangle.points[1].y)) {
+		texture_flat_top_triangle(&args);
 		return;
 	}
 
-	/*texture_thread_data args = { 
-		x0, y0, z0, w0, u0, v0,
-			x1, y1, z1, w1, u1, v1,
-			x2, y2, z2, w2, u2, v2,
-			texture };
+	texture_flat_bottom_triangle(&args);
+	texture_flat_top_triangle(&args);
 
-	SDL_CreateThread(texture_flat_bottom_triangle, "flat_bottom_thread", &args);
-	SDL_CreateThread(texture_flat_bottom_triangle, "flat_top_thread", &args);*/
-	
-	texture_flat_bottom_triangle(
-		x0, y0, z0, w0, u0, v0,
-		x1, y1, z1, w1, u1, v1,
-		x2, y2, z2, w2, u2, v2,
-		texture);
-	texture_flat_top_triangle(
-		x0, y0, z0, w0, u0, v0,
-		x1, y1, z1, w1, u1, v1,
-		x2, y2, z2, w2, u2, v2,
-		texture);
+	//SDL_Thread* bottom_thread = SDL_CreateThread(texture_flat_bottom_triangle, "flat_bottom_thread", &args);
+	//SDL_Thread* top_thread = SDL_CreateThread(texture_flat_top_triangle, "flat_top_thread", &args);
+	//SDL_WaitThread(bottom_thread, NULL);
+	//SDL_WaitThread(top_thread, NULL);
 }
