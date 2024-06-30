@@ -31,6 +31,12 @@ static void tex2_swap(tex2_t* a, tex2_t* b) {
 	*b = temp;
 }
 
+int triangle_painter_compare(const void* t1, const void* t2) {
+	float avg1 = ((triangle_t*)t1)->avg_depth;
+	float avg2 = ((triangle_t*)t2)->avg_depth;
+	return (avg1 > avg2) ? -1 : (avg2 > avg1);
+}
+
 // Does change the triangle, not const
 void sort_triangle_by_y(triangle_t* triangle) {
 	// sort vertex coordinates by "ascending" y's, remember y grows downwards in screen space

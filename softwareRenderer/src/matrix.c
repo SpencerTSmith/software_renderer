@@ -74,7 +74,7 @@ mat4_t mat4_make_perspective(float fov, float inv_aspect, float znear, float zfa
 	p.m[0][0] = inv_aspect * (1.0f / tan(fov / 2.0f));	// x normalization
 	p.m[1][1] = (1.0f / tan(fov / 2.0f));					// y normalization 
 	p.m[2][2] = zfar / (zfar - znear);					// z normalization
-	p.m[2][3] = (-(zfar) * znear) / (zfar - znear);		// z offset by znear
+	p.m[2][3] = (-zfar * znear) / (zfar - znear);		// z offset by znear
 	p.m[3][2] = 1.0f;									// z stored in w, for perspective divide
 	
 	return p;
@@ -93,7 +93,6 @@ vec4_t mat4_mul_vec4(mat4_t m, vec4_t v) {
 
 vec4_t mat4_mul_vec4_project(mat4_t p, vec4_t v) {
 	vec4_t result = mat4_mul_vec4(p, v); // normal multiplication
-
 
 	// Perspective divide by original z (stored in w), making sure to avoid div by zero
 	if (result.w != 0.0f) {

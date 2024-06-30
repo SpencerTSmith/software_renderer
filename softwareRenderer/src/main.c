@@ -209,16 +209,19 @@ static void update(void) {
 	}
 
 	// Sort for painters algorithm, like the old days when memory was more expensive, just bubble sort
-	int num_triangles = array_size(triangles_to_render);
-	for (int i = 0; i < num_triangles; i++) {
-		for (int j = 0; j < num_triangles; j++) {
-			if (triangles_to_render[i].avg_depth < triangles_to_render[j].avg_depth) {
-				triangle_t temp = triangles_to_render[i];
-				triangles_to_render[i] = triangles_to_render[j];
-				triangles_to_render[j] = temp;
-			}
-		}
+	size_t num_triangles = array_size(triangles_to_render);
+	if (triangles_to_render) {
+		qsort(triangles_to_render, num_triangles, sizeof(*triangles_to_render), triangle_painter_compare);
 	}
+	//for (int i = 0; i < num_triangles; i++) {
+	//	for (int j = i; j < num_triangles; j++) {
+	//		if (triangles_to_render[i].avg_depth < triangles_to_render[j].avg_depth) {
+	//			triangle_t temp = triangles_to_render[i];
+	//			triangles_to_render[i] = triangles_to_render[j];
+	//			triangles_to_render[j] = temp;
+	//		}
+	//	}
+	//}
 }
 
 // Might be thought of as our rasterizer and fragment shader
