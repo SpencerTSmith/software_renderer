@@ -68,6 +68,24 @@ mat4_t mat4_make_translation(float tx, float ty, float tz)
 	return t;
 }
 
+mat4_t mat4_make_look_at(vec3_t eye, vec3_t target, vec3_t up)
+{
+	vec3_t z = vec3_sub(target, eye);
+	vec3_normalize(&z);
+	vec3_t x = vec3_cross(up, z);
+	vec3_normalize(&x);
+	vec3_t y = vec3_cross(z, x);	// already normal
+
+	mat4_t v = { {
+		{ x.x, x.y, x.z, -vec3_dot(x, eye) },
+		{ y.x, y.y, y.z, -vec3_dot(y, eye) },
+		{ z.x, z.y, z.z, -vec3_dot(z, eye) },
+		{0.f, 0.f, 0.f, 1.f}
+	} };
+
+	return v;
+}
+
 mat4_t mat4_make_perspective(float fov, float inv_aspect, float znear, float zfar) {
 	mat4_t p = mat4_identity();
 

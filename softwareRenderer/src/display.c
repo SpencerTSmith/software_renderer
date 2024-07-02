@@ -65,7 +65,6 @@ void draw_pixel(int x, int y, uint32_t color) {
 }
 
 void draw_grid(uint32_t color) {
-	// naive
 	for (int y = 0; y < window_height; y+=10)
 	{
 		for (int x = 0; x < window_width; x+=10)

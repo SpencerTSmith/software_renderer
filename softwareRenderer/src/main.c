@@ -11,12 +11,12 @@
 #include "light.h"
 #include "texture.h"
 #include "triangle.h"
+#include "camera.h"
 
 #define MAX_TRIANGLES 4096
 triangle_t triangles_to_render[MAX_TRIANGLES];
 int num_triangles;
 
-vec3_t camera_position = { 0, 0, 0 };
 mat4_t projection_matrix;
 light_t global_light = { 0, 0, 1 };
 
@@ -26,7 +26,7 @@ static int previous_frame_time = 0;
 // Color buffer initialization, other setups too
 static void setup(void) {
 	render_mode = RENDER_WIRE_FRAME;	// default render mode
-	cull_mode = CULL_BACKFACE;	// default cull mode
+	cull_mode = CULL_BACKFACE;			// default cull mode
 
 	// Memory for color buffer
 	color_buffer = (uint32_t*) malloc(sizeof(uint32_t) * window_width * window_height);
@@ -54,8 +54,8 @@ static void setup(void) {
 	//load_redbrick_mesh_texture();
 	//load_cube_mesh_data();
 	
-	load_png_texture_data("./assets/cube.png");
-	load_obj_file_data("./assets/cube.obj");
+	load_png_texture_data("./assets/crab.png");
+	load_obj_file_data("./assets/crab.obj");
 }
 
 // Poll for input while running
@@ -106,8 +106,8 @@ static void update(void) {
 	// Clear our triangles to render
 	num_triangles = 0;
 
-	mesh.rotation.x += 0.01f;
-	mesh.rotation.y -= 0.01f;
+	//mesh.rotation.x += 0.01f;
+	//mesh.rotation.y -= 0.01f;
 	//mesh.rotation.z += 0.01f;
 
 	//mesh.scale.x += 0.001f;
@@ -130,6 +130,11 @@ static void update(void) {
 	world_matrix = mat4_mul_mat4(&rotation_matrix_x, &world_matrix);
 	world_matrix = mat4_mul_mat4(&translation_matrix, &world_matrix);
 
+	// We need a new view matrix every frame
+	camera.position.x += 0.008;
+	camera.position.y += 0.008;
+	mat4_t view_matrix = mat4_make_look_at(camera.position, mesh.translation, (vec3_t) { 0, 1, 0 });
+
 	// Loop faces first, get vertices from faces, project triangle, add to array
 	int num_faces = array_size(mesh.faces);
 	for (int i = 0; i < num_faces; i++) {
@@ -147,7 +152,11 @@ static void update(void) {
 		for (int j = 0; j < 3; j++) {
 			vec4_t transformed_vertex = vec3_to_vec4(face_vertices[j]);
 
+			// To world space
 			transformed_vertex = mat4_mul_vec4(&world_matrix, transformed_vertex);
+
+			// To camera space
+			transformed_vertex = mat4_mul_vec4(&view_matrix, transformed_vertex);
 
 			transformed_vertices[j] = transformed_vertex;
 		}
@@ -161,7 +170,7 @@ static void update(void) {
 		vec3_t AC = vec3_sub(C, A);
 
 		vec3_t face_normal = vec3_cross(AB, AC);
-		vec3_t camera_ray = vec3_sub(camera_position, A);
+		vec3_t camera_ray = vec3_sub((vec3_t){0, 0, 0}, A); // origin is now camera position after camera space transformation
 		
 		// Skip projecting and pushing this triangle to render, if face is looking away from camera
 		if (cull_mode == CULL_BACKFACE) {
@@ -224,12 +233,11 @@ static void update(void) {
 
 // Might be thought of as our rasterizer and fragment shader
 static void render(void) {
-	draw_grid(0xFF808080);
+	//draw_grid(0xFF808080);
 
 	for (int i = 0; i < num_triangles; i++) {
 		triangle_t triangle = triangles_to_render[i];
 		sort_triangle_by_y(&triangle); // Rasterization method requires vertices to run from top to bottom
-		
 
 		// Draw Textured Triangles
 		if (render_mode == RENDER_TEXTURE || render_mode == RENDER_TEXTURE_WIRE) {
@@ -245,19 +253,19 @@ static void render(void) {
 		if (render_mode == RENDER_WIRE_FRAME || render_mode == RENDER_WIRE_VERTS || 
 			render_mode == RENDER_FILL_WIRE || render_mode == RENDER_TEXTURE_WIRE) {
 			draw_triangle(
-				triangle.points[0].x,
-				triangle.points[0].y,
-				triangle.points[1].x,
-				triangle.points[1].y,
-				triangle.points[2].x,
-				triangle.points[2].y, 
+				roundf(triangle.points[0].x),
+				roundf(triangle.points[0].y),
+				roundf(triangle.points[1].x),
+				roundf(triangle.points[1].y),
+				roundf(triangle.points[2].x),
+				roundf(triangle.points[2].y), 
 				0xFF0000FF);
 		}
 
 		// Draw Vertices
 		if (render_mode == RENDER_WIRE_VERTS) {
 			for (int j = 0; j < 3; j++) {
-				draw_rectangle(triangle.points[j].x - 3, triangle.points[j].y - 3, 6, 6, 0xFF0000FF);
+				draw_rectangle(roundf(triangle.points[j].x) - 3, roundf(triangle.points[j].y) - 3, 6, 6, 0xFF0000FF);
 			}
 		}
 
