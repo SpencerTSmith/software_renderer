@@ -13,6 +13,8 @@
 #include "triangle.h"
 #include "camera.h"
 
+float delta_time;
+
 #define MAX_TRIANGLES 4096
 triangle_t triangles_to_render[MAX_TRIANGLES];
 int num_triangles;
@@ -101,21 +103,24 @@ static void update(void) {
 	if (time_to_wait > 0 && time_to_wait <= FRAME_TARGET_TIME) {
 		SDL_Delay(time_to_wait);
 	}
+	delta_time = (SDL_GetTicks() - previous_frame_time) / 1000.0f;	// factor by which we update data per frame
+	
 	previous_frame_time = SDL_GetTicks();
+
 
 	// Clear our triangles to render
 	num_triangles = 0;
 
-	//mesh.rotation.x += 0.01f;
-	//mesh.rotation.y -= 0.01f;
-	//mesh.rotation.z += 0.01f;
-
-	//mesh.scale.x += 0.001f;
-
-	//mesh.translation.y += 0.01f;
-	mesh.translation.z = 5;
-
 	// Create transforms
+	//mesh.rotation.x += 0.1f * delta_time;
+	mesh.rotation.y += 0.1f * delta_time;
+	//mesh.rotation.z += 0.1f * delta_time;
+
+	//mesh.scale.x += 0.001f * delta_time;
+
+	//mesh.translation.y += 0.01f * delta_time;
+	mesh.translation.z = 5.0f;
+
 	mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
 	mat4_t rotation_matrix_x = mat4_make_rotation_x(mesh.rotation.x);
 	mat4_t rotation_matrix_y = mat4_make_rotation_y(mesh.rotation.y);
@@ -131,8 +136,8 @@ static void update(void) {
 	world_matrix = mat4_mul_mat4(&translation_matrix, &world_matrix);
 
 	// We need a new view matrix every frame
-	camera.position.x += 0.008;
-	camera.position.y += 0.008;
+	camera.position.x += 0.1 * delta_time;
+	camera.position.y += 0.1 * delta_time;
 	mat4_t view_matrix = mat4_make_look_at(camera.position, mesh.translation, (vec3_t) { 0, 1, 0 });
 
 	// Loop faces first, get vertices from faces, project triangle, add to array
