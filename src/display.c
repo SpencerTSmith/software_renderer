@@ -4,8 +4,8 @@
 
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
-int window_width = 800;
-int window_height = 600;
+int window_width = 1000;
+int window_height = 800;
 
 uint32_t* color_buffer = NULL;
 float* w_buffer = NULL;

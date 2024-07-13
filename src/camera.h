@@ -10,4 +10,4 @@ typedef struct {
 
 extern camera_t camera;
 
-#endif // !1
+#endif 

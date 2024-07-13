@@ -212,14 +212,14 @@ static void update(void) {
 
 		triangle_t projected_triangle = {
 			.points = {
-				{ projected_vertices[0].x, projected_vertices[0].y, projected_vertices[0].z, projected_vertices[0].w },
-				{ projected_vertices[1].x, projected_vertices[1].y, projected_vertices[1].z, projected_vertices[1].w },
-				{ projected_vertices[2].x, projected_vertices[2].y, projected_vertices[2].z, projected_vertices[2].w }
+				projected_vertices[0],
+				projected_vertices[1],
+				projected_vertices[2],
 			},
 			.tex_coords = {
-				{ mesh_face.a_uv.u, mesh_face.a_uv.v },
-				{ mesh_face.b_uv.u, mesh_face.b_uv.v },
-				{ mesh_face.c_uv.u, mesh_face.c_uv.v },
+				mesh_face.a_uv,
+				mesh_face.b_uv,
+				mesh_face.c_uv
 			},
 			.color = shaded_color,
 			.avg_depth = avg_z
