@@ -24,4 +24,4 @@ vec4_t mat4_mul_vec4_project(const mat4_t* p, vec4_t v);
 mat4_t mat4_mul_mat4(const mat4_t* a, const mat4_t* b);
 
 
-#endif MATRIX_H
+#endif 

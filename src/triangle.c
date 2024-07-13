@@ -4,13 +4,6 @@
 #include "texture.h"
 
 // utility for sorting
-static void int_swap(int* a, int* b) {
-	int temp = *a;
-	*a = *b;
-	*b = temp;
-}
-
-// utility for sorting
 static void float_swap(float* a, float* b) {
 	float temp = *a;
 	*a = *b;
@@ -106,10 +99,6 @@ static void fill_flat_top_triangle(const triangle_t* triangle) {
 	vec4_t a = triangle->points[0];
 	vec4_t b = triangle->points[1];
 	vec4_t c = triangle->points[2];
-
-	tex2_t a_uv = triangle->tex_coords[0];
-	tex2_t b_uv = triangle->tex_coords[1];
-	tex2_t c_uv = triangle->tex_coords[2];
 
 	float dx_1 = roundf(c.x) - roundf(b.x);
 	float dy_1 = roundf(c.y) - roundf(b.y);

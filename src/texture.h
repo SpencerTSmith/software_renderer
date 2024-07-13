@@ -5,7 +5,7 @@
 
 #include "vector.h"
 
-#include "utilities/upng.h"
+#include "upng.h"
 
 typedef struct {
 	float u;

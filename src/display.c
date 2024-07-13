@@ -11,6 +11,8 @@ uint32_t* color_buffer = NULL;
 float* w_buffer = NULL;
 SDL_Texture* color_buffer_texture = NULL;
 
+enum render_mode render_mode = RENDER_WIRE_FRAME;	// default render mode
+enum cull_mode cull_mode = CULL_BACKFACE;			// default cull mode
 // initialize all SDL components for drawing on screen.
 bool initialize_window(void) {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -22,8 +24,8 @@ bool initialize_window(void) {
 	SDL_DisplayMode display_mode;
 	SDL_GetCurrentDisplayMode(0, &display_mode);
 
-	window_width = display_mode.w;
-	window_height = display_mode.h;
+//	window_width = display_mode.w;
+//	window_height = display_mode.h;
 
 	window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 
 		window_width, window_height, SDL_WINDOW_BORDERLESS);
@@ -38,7 +40,7 @@ bool initialize_window(void) {
 		fprintf(stderr, "Error creating SDL renderer.\n");
 		return false;
 	}
-	SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+	SDL_SetWindowFullscreen(window, 0);
 
 	return true;
 }

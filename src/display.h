@@ -1,6 +1,6 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -16,12 +16,12 @@ enum render_mode {
 	RENDER_TEXTURE,
 	RENDER_TEXTURE_WIRE,
 	RENDER_TEXTURE_PS1
-} render_mode;
+} extern render_mode;
 
 enum cull_mode {
 	CULL_BACKFACE,
 	CULL_NONE
-} cull_mode;
+} extern cull_mode;
 
 extern SDL_Window* window;
 extern SDL_Renderer* renderer;

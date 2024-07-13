@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <math.h>
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 #include "array.h"
 #include "display.h"
@@ -13,23 +14,22 @@
 #include "triangle.h"
 #include "camera.h"
 
+#define M_PI 3.14159265358979323846
+
 float delta_time;
 
-#define MAX_TRIANGLES 4096
+#define MAX_TRIANGLES 8192
 triangle_t triangles_to_render[MAX_TRIANGLES];
 int num_triangles;
 
 mat4_t projection_matrix;
-light_t global_light = { 0, 0, 1 };
+light_t global_light = { .direction = { 0, 0, 1 } };
 
 static bool is_running = false;
 static int previous_frame_time = 0;
 
 // Color buffer initialization, other setups too
 static void setup(void) {
-	render_mode = RENDER_WIRE_FRAME;	// default render mode
-	cull_mode = CULL_BACKFACE;			// default cull mode
-
 	// Memory for color buffer
 	color_buffer = (uint32_t*) malloc(sizeof(uint32_t) * window_width * window_height);
 	if (!color_buffer) {
@@ -56,8 +56,8 @@ static void setup(void) {
 	//load_redbrick_mesh_texture();
 	//load_cube_mesh_data();
 	
-	load_png_texture_data("./assets/crab.png");
-	load_obj_file_data("./assets/crab.obj");
+	load_png_texture_data("./assets/drone.png");
+	load_obj_file_data("./assets/drone.obj");
 }
 
 // Poll for input while running
