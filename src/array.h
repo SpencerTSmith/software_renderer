@@ -1,5 +1,5 @@
 #ifndef ARRAY_H
-#define ARRAH_H
+#define ARRAY_H
 
 // preprocessor function for fast push backs
 #define array_push(array, value)                                          \
