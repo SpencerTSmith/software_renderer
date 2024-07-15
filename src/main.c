@@ -107,7 +107,6 @@ static void update(void) {
 	
 	previous_frame_time = SDL_GetTicks();
 
-
 	// Clear our triangles to render
 	num_triangles = 0;
 
@@ -238,7 +237,7 @@ static void update(void) {
 
 // Might be thought of as our rasterizer and fragment shader
 static void render(void) {
-	//draw_grid(0xFF808080);
+	draw_grid(0xFF808080);
 
 	for (int i = 0; i < num_triangles; i++) {
 		triangle_t triangle = triangles_to_render[i];
