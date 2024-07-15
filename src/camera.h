@@ -6,6 +6,9 @@
 typedef struct {
 	vec3_t position;
 	vec3_t direction;
+	vec3_t forward_vel;
+	float yaw;
+	float pitch;
 } camera_t;
 
 extern camera_t camera;
