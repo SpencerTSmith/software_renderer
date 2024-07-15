@@ -62,63 +62,64 @@ static void setup(void) {
 // Poll for input while running
 static void process_input(void) {
 	SDL_Event event;
-	SDL_PollEvent(&event);
+	while(SDL_PollEvent(&event)) {
 
-	switch (event.type)
-	{
-		case SDL_QUIT:
-			is_running = false;
-			break;
-		case SDL_KEYDOWN:
-			if (event.key.keysym.sym == SDLK_ESCAPE)
+		switch (event.type)
+		{
+			case SDL_QUIT:
 				is_running = false;
+				break;
+			case SDL_KEYDOWN:
+				if (event.key.keysym.sym == SDLK_ESCAPE)
+					is_running = false;
 
-			if (event.key.keysym.sym == SDLK_1)
-				render_mode = RENDER_WIRE_FRAME;
-			if (event.key.keysym.sym == SDLK_2)
-				render_mode = RENDER_WIRE_VERTS;
-			if (event.key.keysym.sym == SDLK_3)
-				render_mode = RENDER_FILL;
-			if (event.key.keysym.sym == SDLK_4)
-				render_mode = RENDER_FILL_WIRE;
-			if (event.key.keysym.sym == SDLK_5)
-				render_mode = RENDER_TEXTURE_WIRE;
-			if (event.key.keysym.sym == SDLK_6)
-				render_mode = RENDER_TEXTURE;
-			
-			// camera y control
-			if (event.key.keysym.sym == SDLK_SPACE)
-				camera.position.y += 3.0f * delta_time; 
-			if (event.key.keysym.sym == SDLK_c)
-				camera.position.y -= 3.0f * delta_time;
-			
-			// yaw control
-			if (event.key.keysym.sym == SDLK_a)
-				camera.yaw += 1.0f * delta_time; 
-			if (event.key.keysym.sym == SDLK_d)
-				camera.yaw -= 1.0f * delta_time; 
+				if (event.key.keysym.sym == SDLK_1)
+					render_mode = RENDER_WIRE_FRAME;
+				if (event.key.keysym.sym == SDLK_2)
+					render_mode = RENDER_WIRE_VERTS;
+				if (event.key.keysym.sym == SDLK_3)
+					render_mode = RENDER_FILL;
+				if (event.key.keysym.sym == SDLK_4)
+					render_mode = RENDER_FILL_WIRE;
+				if (event.key.keysym.sym == SDLK_5)
+					render_mode = RENDER_TEXTURE_WIRE;
+				if (event.key.keysym.sym == SDLK_6)
+					render_mode = RENDER_TEXTURE;
 
-			if (event.key.keysym.sym == SDLK_u)
-				camera.pitch += 1.0f * delta_time; 
-			if (event.key.keysym.sym == SDLK_i)
-				camera.pitch -= 1.0f * delta_time; 
+				// camera y control
+				if (event.key.keysym.sym == SDLK_SPACE)
+					camera.position.y += 3.0f * delta_time; 
+				if (event.key.keysym.sym == SDLK_c)
+					camera.position.y -= 3.0f * delta_time;
 
-			// forward velocity control
-			if (event.key.keysym.sym == SDLK_w) {
-				camera.forward_vel = vec3_mul(camera.direction, 5.0f * delta_time);
-				camera.position = vec3_add(camera.position, camera.forward_vel);
-			}
-			if (event.key.keysym.sym == SDLK_s) {
-				camera.forward_vel = vec3_mul(camera.direction, 5.0f * delta_time);
-				camera.position = vec3_sub(camera.position, camera.forward_vel);
-			}
+				// yaw control
+				if (event.key.keysym.sym == SDLK_a)
+					camera.yaw += 3.0f * delta_time; 
+				if (event.key.keysym.sym == SDLK_d)
+					camera.yaw -= 3.0f * delta_time; 
 
-			if (event.key.keysym.sym == SDLK_p)
-				render_mode = RENDER_TEXTURE_PS1;
+				if (event.key.keysym.sym == SDLK_u)
+					camera.pitch += 3.0f * delta_time; 
+				if (event.key.keysym.sym == SDLK_i)
+					camera.pitch -= 3.0f * delta_time; 
 
-			if (event.key.keysym.sym == SDLK_c)
-				cull_mode = cull_mode == CULL_BACKFACE ? CULL_NONE : CULL_BACKFACE;
-			break;
+				// forward velocity control
+				if (event.key.keysym.sym == SDLK_w) {
+					camera.forward_vel = vec3_mul(camera.direction, 5.0f * delta_time);
+					camera.position = vec3_add(camera.position, camera.forward_vel);
+				}
+				if (event.key.keysym.sym == SDLK_s) {
+					camera.forward_vel = vec3_mul(camera.direction, 5.0f * delta_time);
+					camera.position = vec3_sub(camera.position, camera.forward_vel);
+				}
+
+				if (event.key.keysym.sym == SDLK_p)
+					render_mode = RENDER_TEXTURE_PS1;
+
+				if (event.key.keysym.sym == SDLK_c)
+					cull_mode = cull_mode == CULL_BACKFACE ? CULL_NONE : CULL_BACKFACE;
+				break;
+		}
 	}
 }
 
