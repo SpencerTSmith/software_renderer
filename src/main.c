@@ -61,9 +61,9 @@ static void setup(void) {
 
 // Poll for input while running
 static void process_input(void) {
+	// TODO: make input smoother
 	SDL_Event event;
 	while(SDL_PollEvent(&event)) {
-
 		switch (event.type)
 		{
 			case SDL_QUIT:
