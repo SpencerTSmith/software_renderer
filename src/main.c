@@ -12,6 +12,7 @@
 #include "texture.h"
 #include "triangle.h"
 #include "vector.h"
+#include "clip.h"
 
 #define M_PI 3.14159265358979323846
 
@@ -54,6 +55,7 @@ static void setup(void) {
 	float znear = 0.1f;
 	float zfar = 100.0f;
 	projection_matrix = mat4_make_perspective(fov, inv_aspect, znear, zfar);
+	init_frustum_planes(fov, znear, zfar);
 
 	// load_redbrick_mesh_texture();
 	// load_cube_mesh_data();
