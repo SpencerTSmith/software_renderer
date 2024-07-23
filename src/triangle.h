@@ -1,11 +1,11 @@
 #ifndef TRIANGLE_H
 #define TRIANGLE_H
 
-#include "vector.h"
 #include "texture.h"
+#include "vector.h"
 
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 // Face vertices index, clockwise
 typedef struct {
@@ -26,14 +26,14 @@ typedef struct {
 	float avg_depth;
 } triangle_t;
 
-int triangle_painter_compare(const void* t1, const void* t2);
+int triangle_painter_compare(const void *t1, const void *t2);
 
-void sort_triangle_by_y(triangle_t* triangle);
+void sort_triangle_by_y(triangle_t *triangle);
 
 void draw_filled_triangle(triangle_t triangle);
 
-void draw_affine_textured_triangle(triangle_t triangle, uint32_t* texture);
+void draw_affine_textured_triangle(triangle_t triangle, uint32_t *texture);
 
-void draw_textured_triangle(triangle_t triangle, uint32_t* texture);
+void draw_textured_triangle(triangle_t triangle, uint32_t *texture);
 
 #endif

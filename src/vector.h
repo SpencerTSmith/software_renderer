@@ -20,8 +20,10 @@ vec2_t vec2_sub(vec2_t v1, vec2_t v2);
 vec2_t vec2_mul(vec2_t v, float s);
 vec2_t vec2_div(vec2_t v, float s);
 float vec2_dot(vec2_t a, vec2_t b);
-void vec2_normalize(vec2_t* v);
-float vec2_cross(vec2_t a, vec2_t b);	// No such literal math thing as 2D cross product but useful in practice, just determinant
+void vec2_normalize(vec2_t *v);
+float vec2_cross(vec2_t a,
+				 vec2_t b); // No such literal math thing as 2D cross product
+							// but useful in practice, just determinant
 
 // 3d functions
 float vec3_length(vec3_t v);
@@ -31,7 +33,7 @@ vec3_t vec3_mul(vec3_t v, float s);
 vec3_t vec3_div(vec3_t v, float s);
 vec3_t vec3_cross(vec3_t a, vec3_t b);
 float vec3_dot(vec3_t a, vec3_t b);
-void vec3_normalize(vec3_t* v);
+void vec3_normalize(vec3_t *v);
 
 vec3_t vec3_rotate_x(vec3_t v, float angle);
 vec3_t vec3_rotate_y(vec3_t v, float angle);
