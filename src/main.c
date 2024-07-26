@@ -5,6 +5,7 @@
 
 #include "array.h"
 #include "camera.h"
+#include "clip.h"
 #include "display.h"
 #include "light.h"
 #include "matrix.h"
@@ -12,7 +13,6 @@
 #include "texture.h"
 #include "triangle.h"
 #include "vector.h"
-#include "clip.h"
 
 #define M_PI 3.14159265358979323846
 
@@ -40,6 +40,10 @@ static void setup(void) {
 
 	// Memory for z buffer
 	w_buffer = (float *)malloc(sizeof(float) * window_width * window_height);
+	if (!w_buffer) {
+		fprintf(stderr, "Error creating depth buffer.\n");
+		is_running = false;
+	}
 
 	// SDL texture for rendering buffer from memory
 	color_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32,
@@ -60,8 +64,8 @@ static void setup(void) {
 	// load_redbrick_mesh_texture();
 	// load_cube_mesh_data();
 
-	load_png_texture_data("./assets/drone.png");
-	load_obj_file_data("./assets/drone.obj");
+	load_png_texture_data("./assets/cube.png");
+	load_obj_file_data("./assets/cube.obj");
 }
 
 // Poll for input while running
@@ -122,7 +126,7 @@ static void process_input(void) {
 			if (event.key.keysym.sym == SDLK_p)
 				render_mode = RENDER_TEXTURE_PS1;
 
-			if (event.key.keysym.sym == SDLK_c)
+			if (event.key.keysym.sym == SDLK_b)
 				cull_mode =
 					cull_mode == CULL_BACKFACE ? CULL_NONE : CULL_BACKFACE;
 			break;
@@ -232,25 +236,15 @@ static void update(void) {
 				continue;
 		}
 
-		// Flat shading
-		vec3_normalize(&global_light.direction);
-		vec3_normalize(&face_normal);
-		float light_alignment =
-			-vec3_dot(global_light.direction,
-					  face_normal); // Negative because pointing at the light
-									// means more light
-		uint32_t shaded_color =
-			light_apply_intensity(mesh_face.color, light_alignment);
-
-		// Not necessary to divide by 3 here, does not change relative ordering
-		float avg_z = transformed_vertices[0].z + transformed_vertices[1].z +
-					  transformed_vertices[2].z;
+		// Perform frustum clipping
+		polygon_t clip_tri = {.vertices = {A, B, C}, .num_vertices = 3};
+		clip_polygon(&clip_tri);
 
 		// Project into 2d points, but still saving the new "adjusted" z, and
 		// original z in w
 		vec4_t projected_vertices[3];
 		for (int j = 0; j < 3; j++) {
-			// Project to screen space
+			// Project to screen space, also performs perspective divide
 			vec4_t projected_vertex = mat4_mul_vec4_project(
 				&projection_matrix, transformed_vertices[j]);
 
@@ -267,6 +261,20 @@ static void update(void) {
 			// Save that point
 			projected_vertices[j] = projected_vertex;
 		}
+
+		// Flat shading
+		vec3_normalize(&global_light.direction);
+		vec3_normalize(&face_normal);
+		float light_alignment =
+			-vec3_dot(global_light.direction,
+					  face_normal); // Negative because pointing at the light
+									// means more light
+		uint32_t shaded_color =
+			light_apply_intensity(mesh_face.color, light_alignment);
+
+		// Not necessary to divide by 3 here, does not change relative ordering
+		float avg_z = transformed_vertices[0].z + transformed_vertices[1].z +
+					  transformed_vertices[2].z;
 
 		triangle_t projected_triangle = {
 			.points =

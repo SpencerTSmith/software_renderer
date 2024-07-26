@@ -30,3 +30,18 @@ void init_frustum_planes(float fov, float z_near, float z_far) {
 	frustum_planes[FAR_FRUSTUM].point = (vec3_t){0, 0, z_far};
 	frustum_planes[FAR_FRUSTUM].normal = (vec3_t){0, 0, -1};
 }
+
+void clip_against_plane(polygon_t *polygon, int frust_plane) {
+
+
+}
+
+void clip_polygon(polygon_t *polygon) {
+	clip_against_plane(polygon, LEFT_FRUSTUM);
+	clip_against_plane(polygon, RIGHT_FRUSTUM);
+	clip_against_plane(polygon, TOP_FRUSTUM);
+	clip_against_plane(polygon, BOTTOM_FRUSTUM);
+	clip_against_plane(polygon, NEAR_FRUSTUM);
+	clip_against_plane(polygon, FAR_FRUSTUM);
+}
+
