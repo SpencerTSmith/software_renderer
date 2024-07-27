@@ -24,8 +24,8 @@ bool initialize_window(void) {
 	SDL_DisplayMode display_mode;
 	SDL_GetCurrentDisplayMode(0, &display_mode);
 
-	//	window_width = display_mode.w;
-	//	window_height = display_mode.h;
+	window_width = display_mode.w;
+	window_height = display_mode.h;
 
 	window =
 		SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -83,7 +83,7 @@ void draw_line(int x0, int y0, int x1, int y1, uint32_t color) {
 	// Only works when longest "side-length" is the one by which you travel the
 	// entire length,
 	//	comment out ternary to see what it looks like without... gaps in steep
-	//lines
+	// lines
 	int side_length =
 		abs(delta_x) >= abs(delta_y) ? abs(delta_x) : abs(delta_y);
 

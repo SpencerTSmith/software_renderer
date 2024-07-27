@@ -2,6 +2,7 @@
 #include <stdint.h>
 
 #include <SDL2/SDL.h>
+#include <stdio.h>
 
 #include "array.h"
 #include "camera.h"
@@ -239,6 +240,7 @@ static void update(void) {
 		// Perform frustum clipping
 		polygon_t clip_tri = {.vertices = {A, B, C}, .num_vertices = 3};
 		clip_polygon(&clip_tri);
+		printf("Number of polygon vertices after clipping: %d\n", clip_tri.num_vertices);
 
 		// Project into 2d points, but still saving the new "adjusted" z, and
 		// original z in w

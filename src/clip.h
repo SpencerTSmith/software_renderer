@@ -5,7 +5,7 @@
 
 #define MAX_NUM_POLY_VERTS 10
 
-enum {
+typedef enum {
 	LEFT_FRUSTUM,
 	RIGHT_FRUSTUM,
 	TOP_FRUSTUM,
@@ -13,7 +13,7 @@ enum {
 	NEAR_FRUSTUM,
 	FAR_FRUSTUM,
 	NUM_PLANES
-};
+} frustum_side;
 
 typedef struct {
 	vec3_t point;
@@ -27,7 +27,7 @@ typedef struct {
 
 void init_frustum_planes(float fov, float z_near, float z_far);
 
-void clip_against_plane(polygon_t *polygon, int frust_plane);
+void clip_against_plane(polygon_t *polygon, const plane_t *frust_plane);
 void clip_polygon(polygon_t *polygon);
 
 #endif
