@@ -21,9 +21,9 @@ vec2_t vec2_mul(vec2_t v, float s);
 vec2_t vec2_div(vec2_t v, float s);
 float vec2_dot(vec2_t a, vec2_t b);
 void vec2_normalize(vec2_t *v);
-float vec2_cross(vec2_t a,
-				 vec2_t b); // No such literal math thing as 2D cross product
-							// but useful in practice, just determinant
+// No such literal math thing as 2D cross product
+// but useful in practice, just determinant really
+float vec2_cross(vec2_t a, vec2_t b);
 
 // 3d functions
 float vec3_length(vec3_t v);

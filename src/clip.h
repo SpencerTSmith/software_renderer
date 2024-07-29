@@ -1,9 +1,11 @@
 #ifndef CLIPPING_H
 #define CLIPPING_H
 
+#include "triangle.h"
 #include "vector.h"
 
 #define MAX_NUM_POLY_VERTS 10
+#define MAX_NUM_POLY_TRIS (MAX_NUM_POLY_VERTS - 2)
 
 typedef enum {
 	LEFT_FRUSTUM,
@@ -27,7 +29,8 @@ typedef struct {
 
 void init_frustum_planes(float fov, float z_near, float z_far);
 
-void clip_against_plane(polygon_t *polygon, const plane_t *frust_plane);
 void clip_polygon(polygon_t *polygon);
+// Returns number of triangles created
+int polygon_to_tris(polygon_t *polygon, triangle_t triangles[]);
 
 #endif

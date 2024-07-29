@@ -238,59 +238,68 @@ static void update(void) {
 		}
 
 		// Perform frustum clipping
-		polygon_t clip_tri = {.vertices = {A, B, C}, .num_vertices = 3};
-		clip_polygon(&clip_tri);
-		printf("Number of polygon vertices after clipping: %d\n", clip_tri.num_vertices);
+		polygon_t clip_poly = {.vertices = {A, B, C}, .num_vertices = 3};
+		clip_polygon(&clip_poly);
 
-		// Project into 2d points, but still saving the new "adjusted" z, and
-		// original z in w
-		vec4_t projected_vertices[3];
-		for (int j = 0; j < 3; j++) {
-			// Project to screen space, also performs perspective divide
-			vec4_t projected_vertex = mat4_mul_vec4_project(
-				&projection_matrix, transformed_vertices[j]);
+		// Back to triangles
+		triangle_t clipped_tris[MAX_NUM_POLY_TRIS];
+		int num_clipped_tris = polygon_to_tris(&clip_poly, clipped_tris);
 
-			// Scale it up
-			projected_vertex.x *= (window_width / 2.f);
-			projected_vertex.y *=
-				-(window_height / 2.f); // mult by -1 to invert in screen space
-										// as models have opposite y axis
+		for (int i = 0; i < num_clipped_tris; i++) {
+			triangle_t clipped_triangle = clipped_tris[i];
 
-			// Translate point to middle of screen
-			projected_vertex.x += (window_width / 2.f);
-			projected_vertex.y += (window_height / 2.f);
+			// Project into 2d points, but still saving the new "adjusted" z,
+			// and original z in w
+			vec4_t projected_vertices[3];
+			for (int j = 0; j < 3; j++) {
+				// Project to screen space, also performs perspective divide
+				vec4_t projected_vertex = mat4_mul_vec4_project(
+					&projection_matrix, clipped_triangle.points[j]);
 
-			// Save that point
-			projected_vertices[j] = projected_vertex;
-		}
+				// Scale it up
+				projected_vertex.x *= (window_width / 2.f);
+				projected_vertex.y *=
+					-(window_height /
+					  2.f); // mult by -1 to invert in screen space
+							// as models have opposite y axis
 
-		// Flat shading
-		vec3_normalize(&global_light.direction);
-		vec3_normalize(&face_normal);
-		float light_alignment =
-			-vec3_dot(global_light.direction,
-					  face_normal); // Negative because pointing at the light
-									// means more light
-		uint32_t shaded_color =
-			light_apply_intensity(mesh_face.color, light_alignment);
+				// Translate point to middle of screen
+				projected_vertex.x += (window_width / 2.f);
+				projected_vertex.y += (window_height / 2.f);
 
-		// Not necessary to divide by 3 here, does not change relative ordering
-		float avg_z = transformed_vertices[0].z + transformed_vertices[1].z +
-					  transformed_vertices[2].z;
+				// Save that point
+				projected_vertices[j] = projected_vertex;
+			}
 
-		triangle_t projected_triangle = {
-			.points =
-				{
-					projected_vertices[0],
-					projected_vertices[1],
-					projected_vertices[2],
-				},
-			.tex_coords = {mesh_face.a_uv, mesh_face.b_uv, mesh_face.c_uv},
-			.color = shaded_color,
-			.avg_depth = avg_z};
+			// Flat shading
+			vec3_normalize(&global_light.direction);
+			vec3_normalize(&face_normal);
+			float light_alignment =
+				-vec3_dot(global_light.direction,
+						  face_normal); // Negative because pointing at the
+										// light means more light
+			uint32_t shaded_color =
+				light_apply_intensity(mesh_face.color, light_alignment);
 
-		if (num_triangles < MAX_TRIANGLES) {
-			triangles_to_render[num_triangles++] = projected_triangle;
+			// Not necessary to divide by 3 here, does not change relative
+			// ordering
+			float avg_z = transformed_vertices[0].z +
+						  transformed_vertices[1].z + transformed_vertices[2].z;
+
+			triangle_t triangle_to_render = {
+				.points =
+					{
+						projected_vertices[0],
+						projected_vertices[1],
+						projected_vertices[2],
+					},
+				.tex_coords = {mesh_face.a_uv, mesh_face.b_uv, mesh_face.c_uv},
+				.color = shaded_color,
+				.avg_depth = avg_z};
+
+			if (num_triangles < MAX_TRIANGLES) {
+				triangles_to_render[num_triangles++] = triangle_to_render;
+			}
 		}
 	}
 

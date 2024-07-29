@@ -35,8 +35,8 @@ void init_frustum_planes(float fov, float z_near, float z_far) {
 	frustum_planes[FAR_FRUSTUM].normal = (vec3_t){0, 0, -1};
 }
 
-vec3_t lerp_new_vert(vec3_t prev_vert, vec3_t curr_vert, float prev_dot,
-					 float curr_dot) {
+static vec3_t lerp_new_vert(vec3_t prev_vert, vec3_t curr_vert, float prev_dot,
+							float curr_dot) {
 	float lerp_factor = (prev_dot) / (prev_dot - curr_dot);
 
 	// new = prev + factor * (curr - prev)
@@ -46,7 +46,7 @@ vec3_t lerp_new_vert(vec3_t prev_vert, vec3_t curr_vert, float prev_dot,
 	return new_vert;
 }
 
-void clip_against_plane(polygon_t *polygon, const plane_t *frust_plane) {
+static void clip_against_plane(polygon_t *polygon, const plane_t *frust_plane) {
 	vec3_t plane_point = frust_plane->point;
 	vec3_t plane_norm = frust_plane->normal;
 
@@ -83,4 +83,20 @@ void clip_polygon(polygon_t *polygon) {
 	clip_against_plane(polygon, &frustum_planes[BOTTOM_FRUSTUM]);
 	clip_against_plane(polygon, &frustum_planes[NEAR_FRUSTUM]);
 	clip_against_plane(polygon, &frustum_planes[FAR_FRUSTUM]);
+}
+
+int polygon_to_tris(polygon_t *polygon, triangle_t triangles[]) {
+	int num_tris = 0;
+	for (int i = 0; i < polygon->num_vertices - 2; i++) {
+		vec3_t v1 = polygon->vertices[0];
+		vec3_t v2 = polygon->vertices[i + 1];
+		vec3_t v3 = polygon->vertices[i + 2];
+
+		triangles[num_tris].points[0] = vec3_to_vec4(v1);
+		triangles[num_tris].points[1] = vec3_to_vec4(v2);
+		triangles[num_tris].points[2] = vec3_to_vec4(v3);
+		num_tris++;
+	}
+
+	return num_tris;
 }
