@@ -1,3 +1,4 @@
+#include <SDL2/SDL_keycode.h>
 #include <math.h>
 #include <stdint.h>
 
@@ -102,14 +103,15 @@ static void process_input(void) {
 				camera.position.y -= 3.0f * delta_time;
 
 			// yaw control
-			if (event.key.keysym.sym == SDLK_a)
+			if (event.key.keysym.sym == SDLK_RIGHT)
 				camera.yaw += 3.0f * delta_time;
-			if (event.key.keysym.sym == SDLK_d)
+			if (event.key.keysym.sym == SDLK_LEFT)
 				camera.yaw -= 3.0f * delta_time;
 
-			if (event.key.keysym.sym == SDLK_u)
+			// pitch control
+			if (event.key.keysym.sym == SDLK_UP)
 				camera.pitch += 3.0f * delta_time;
-			if (event.key.keysym.sym == SDLK_i)
+			if (event.key.keysym.sym == SDLK_DOWN)
 				camera.pitch -= 3.0f * delta_time;
 
 			// forward velocity control

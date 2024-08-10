@@ -61,7 +61,7 @@ static void clip_against_plane(polygon_t *polygon, const plane_t *frust_plane) {
 
 		if (curr_dot * prev_dot < 0.0f) { // From in-vert to out-vert/vice versa
 			vec3_t new_vert =
-				lerp_new_vert(curr_vert, prev_vert, prev_dot, curr_dot);
+				lerp_new_vert(prev_vert, curr_vert, prev_dot, curr_dot);
 			inside_plane[num_in++] = new_vert;
 		}
 
