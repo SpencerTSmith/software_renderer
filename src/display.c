@@ -1,5 +1,6 @@
 #include "display.h"
 
+#include <SDL2/SDL_video.h>
 #include <stdio.h>
 
 SDL_Window *window = NULL;
@@ -41,7 +42,7 @@ bool initialize_window(void) {
 		fprintf(stderr, "Error creating SDL renderer.\n");
 		return false;
 	}
-	SDL_SetWindowFullscreen(window, 0);
+	SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
 
 	return true;
 }

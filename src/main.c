@@ -56,12 +56,14 @@ static void setup(void) {
 		is_running = false;
 	}
 
-	float fov = M_PI / 3.0f; // radians
+	float aspect = (float)window_width / window_height;
 	float inv_aspect = (float)window_height / window_width;
+	float fovy = M_PI / 3.0f; // radians
+	float fovx = 2 * atanf(tanf(fovy / 2) * aspect); 
 	float znear = 0.1f;
 	float zfar = 100.0f;
-	projection_matrix = mat4_make_perspective(fov, inv_aspect, znear, zfar);
-	init_frustum_planes(fov, znear, zfar);
+	projection_matrix = mat4_make_perspective(fovy, inv_aspect, znear, zfar);
+	init_frustum_planes(fovy, fovx, znear, zfar);
 
 	// load_redbrick_mesh_texture();
 	// load_cube_mesh_data();
@@ -154,9 +156,9 @@ static void update(void) {
 	num_triangles = 0;
 
 	// Create transforms
-	// mesh.rotation.x += 0.1f * delta_time;
-	// mesh.rotation.y += 0.1f * delta_time;
-	// mesh.rotation.z += 0.1f * delta_time;
+	/*mesh.rotation.x += 0.1f * delta_time;*/
+	/*mesh.rotation.y += 0.1f * delta_time;*/
+	/*mesh.rotation.z += 0.1f * delta_time;*/
 
 	// mesh.scale.x += 0.001f * delta_time;
 
@@ -192,8 +194,8 @@ static void update(void) {
 	target = vec3_add(camera.position, camera.direction);
 	mat4_t view_matrix = mat4_make_look_at(
 		camera.position, target,
-		up_direction); // Loop faces first, get vertices from faces, project
-					   // triangle, add to array
+		up_direction); // Loop faces first, get vertices from
+					   // faces, project triangle, add to array
 	int num_faces = array_size(mesh.faces);
 	for (int i = 0; i < num_faces; i++) {
 		face_t mesh_face = mesh.faces[i];
@@ -326,8 +328,9 @@ static void render(void) {
 		if (render_mode == RENDER_TEXTURE ||
 			render_mode == RENDER_TEXTURE_WIRE) {
 			draw_textured_triangle(
-				triangle, mesh_texture); // passing triangle by reference causes
-										 // some to not be rendered
+				triangle,
+				mesh_texture); // passing triangle by reference
+							   // causes some to not be rendered
 		}
 
 		// Draw Filled Triangles

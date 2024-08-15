@@ -27,10 +27,11 @@ typedef struct {
 	int num_vertices;
 } polygon_t;
 
-void init_frustum_planes(float fov, float z_near, float z_far);
+void init_frustum_planes(float fovy, float fovx, float z_near, float z_far);
 
 void clip_polygon(polygon_t *polygon);
-// Returns number of triangles created
+
+// Returns number of triangles created, outputs triangles into array
 int polygon_to_tris(polygon_t *polygon, triangle_t triangles[]);
 
 #endif
