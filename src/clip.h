@@ -32,6 +32,7 @@ void init_frustum_planes(float fovy, float fovx, float z_near, float z_far);
 void clip_polygon(polygon_t *polygon);
 
 // Returns number of triangles created, outputs triangles into array
-int polygon_to_tris(polygon_t *polygon, triangle_t triangles[MAX_NUM_POLY_TRIS]);
+int polygon_to_tris(polygon_t *polygon,
+					triangle_t triangles[MAX_NUM_POLY_TRIS]);
 
 #endif

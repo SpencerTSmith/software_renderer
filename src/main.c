@@ -68,8 +68,8 @@ static void setup(void) {
 	// load_redbrick_mesh_texture();
 	// load_cube_mesh_data();
 
-	load_png_texture_data("./assets/f22.png");
-	load_obj_file_data("./assets/f22.obj");
+	load_png_texture_data("./assets/cube.png");
+	load_obj_file_data("./assets/cube.obj");
 }
 
 // Poll for input while running
@@ -194,12 +194,13 @@ static void update(void) {
 	// Loop faces first, get vertices from faces, project triangle, add to array
 	int num_faces = array_size(mesh.faces);
 	for (int i = 0; i < num_faces; i++) {
-		face_t mesh_face = mesh.faces[i];
+		if (i != 4)
+			continue;
 
 		// Find vertices in face
-		vec3_t face_vertices[3] = {mesh.vertices[mesh_face.a],
-								   mesh.vertices[mesh_face.b],
-								   mesh.vertices[mesh_face.c]};
+		vec3_t face_vertices[3] = {mesh.vertices[mesh.faces[i].a],
+								   mesh.vertices[mesh.faces[i].b],
+								   mesh.vertices[mesh.faces[i].c]};
 
 		// Transform vertices to world space
 		vec4_t transformed_vertices[3];
@@ -253,21 +254,18 @@ static void update(void) {
 			vec4_t projected_vertices[3];
 			for (int j = 0; j < 3; j++) {
 				// Project to screen space, also performs perspective divide
-				vec4_t projected_vertex = mat4_mul_vec4_project(
+				projected_vertices[j] = mat4_mul_vec4_project(
 					&projection_matrix, clipped_triangle.points[j]);
 
 				// Scale it up
-				projected_vertex.x *= (window_width / 2.f);
+				projected_vertices[j].x *= (window_width / 2.f);
 				// mult by -1 to invert in screen space as models have opposite
 				// y axis
-				projected_vertex.y *= -(window_height / 2.f);
+				projected_vertices[j].y *= -(window_height / 2.f);
 
 				// Translate point to middle of screen
-				projected_vertex.x += (window_width / 2.f);
-				projected_vertex.y += (window_height / 2.f);
-
-				// Save that point
-				projected_vertices[j] = projected_vertex;
+				projected_vertices[j].x += (window_width / 2.f);
+				projected_vertices[j].y += (window_height / 2.f);
 			}
 
 			// Flat shading
@@ -278,7 +276,7 @@ static void update(void) {
 						  face_normal); // Negative because pointing at the
 										// light means more light
 			uint32_t shaded_color =
-				light_apply_intensity(mesh_face.color, light_alignment);
+				light_apply_intensity(mesh.faces[i].color, light_alignment);
 
 			// Not necessary to divide by 3 here, does not change relative
 			// ordering
@@ -292,7 +290,7 @@ static void update(void) {
 						projected_vertices[1],
 						projected_vertices[2],
 					},
-				.tex_coords = {mesh_face.a_uv, mesh_face.b_uv, mesh_face.c_uv},
+				.tex_coords = {mesh.faces[i].a_uv, mesh.faces[i].b_uv, mesh.faces[i].c_uv},
 				.color = shaded_color,
 				.avg_depth = avg_z};
 
@@ -302,8 +300,8 @@ static void update(void) {
 		}
 	}
 
-	// Sort for painters algorithm, like the old days when memory was more
-	// expensive, just bubble sort
+	// Sorting painters algorithm, like old days when memory was more
+	// expensive
 	if (render_mode == RENDER_TEXTURE_PS1) {
 		qsort(triangles_to_render, num_triangles, sizeof(*triangles_to_render),
 			  triangle_painter_compare);
@@ -312,6 +310,8 @@ static void update(void) {
 
 // Might be thought of as our rasterizer and fragment shader
 static void render(void) {
+	SDL_RenderClear(renderer);
+
 	draw_grid(0xFF808080);
 
 	for (int i = 0; i < num_triangles; i++) {
