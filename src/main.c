@@ -59,17 +59,17 @@ static void setup(void) {
 	float aspect = (float)window_width / window_height;
 	float inv_aspect = (float)window_height / window_width;
 	float fovy = M_PI / 3.0f; // radians
-	float fovx = 2 * atanf(tanf(fovy / 2) * aspect); 
-	float znear = 0.1f;
-	float zfar = 100.0f;
+	float fovx = 2 * atanf(tanf(fovy / 2) * aspect);
+	float znear = 1.0f;
+	float zfar = 20.0f;
 	projection_matrix = mat4_make_perspective(fovy, inv_aspect, znear, zfar);
 	init_frustum_planes(fovy, fovx, znear, zfar);
 
 	// load_redbrick_mesh_texture();
 	// load_cube_mesh_data();
 
-	load_png_texture_data("./assets/cube.png");
-	load_obj_file_data("./assets/cube.obj");
+	load_png_texture_data("./assets/f22.png");
+	load_obj_file_data("./assets/f22.obj");
 }
 
 // Poll for input while running
@@ -147,8 +147,8 @@ static void update(void) {
 	if (time_to_wait > 0 && time_to_wait <= FRAME_TARGET_TIME) {
 		SDL_Delay(time_to_wait);
 	}
-	delta_time = (SDL_GetTicks() - previous_frame_time) /
-				 1000.0f; // factor by which we update data per frame
+	// factor by which we update data per frame
+	delta_time = (SDL_GetTicks() - previous_frame_time) / 1000.0f;
 
 	previous_frame_time = SDL_GetTicks();
 
@@ -156,13 +156,9 @@ static void update(void) {
 	num_triangles = 0;
 
 	// Create transforms
-	/*mesh.rotation.x += 0.1f * delta_time;*/
-	/*mesh.rotation.y += 0.1f * delta_time;*/
-	/*mesh.rotation.z += 0.1f * delta_time;*/
-
-	// mesh.scale.x += 0.001f * delta_time;
-
-	// mesh.translation.y += 0.01f * delta_time;
+	mesh.rotation.x += 0.f * delta_time;
+	mesh.rotation.y += 0.f * delta_time;
+	mesh.rotation.z += 0.f * delta_time;
 	mesh.translation.z = 5.0f;
 
 	mat4_t scale_matrix =
@@ -192,10 +188,10 @@ static void update(void) {
 		mat4_mul_vec4(&camera_rotation_pitch, vec3_to_vec4(camera.direction)));
 
 	target = vec3_add(camera.position, camera.direction);
-	mat4_t view_matrix = mat4_make_look_at(
-		camera.position, target,
-		up_direction); // Loop faces first, get vertices from
-					   // faces, project triangle, add to array
+	mat4_t view_matrix =
+		mat4_make_look_at(camera.position, target, up_direction);
+
+	// Loop faces first, get vertices from faces, project triangle, add to array
 	int num_faces = array_size(mesh.faces);
 	for (int i = 0; i < num_faces; i++) {
 		face_t mesh_face = mesh.faces[i];
@@ -230,9 +226,8 @@ static void update(void) {
 		vec3_t AC = vec3_sub(C, A);
 
 		vec3_t face_normal = vec3_cross(AB, AC);
-		vec3_t camera_ray =
-			vec3_sub((vec3_t){0, 0, 0}, A); // origin is now camera position
-											// after camera space transformation
+		// origin is now camera position after camera space transformation
+		vec3_t camera_ray = vec3_sub((vec3_t){0, 0, 0}, A);
 
 		// Skip projecting and pushing this triangle to render, if face is
 		// looking away from camera
@@ -249,8 +244,9 @@ static void update(void) {
 		triangle_t clipped_tris[MAX_NUM_POLY_TRIS];
 		int num_clipped_tris = polygon_to_tris(&clip_poly, clipped_tris);
 
-		for (int i = 0; i < num_clipped_tris; i++) {
-			triangle_t clipped_triangle = clipped_tris[i];
+		// For all the new triangles do projection
+		for (int t = 0; t < num_clipped_tris; t++) {
+			triangle_t clipped_triangle = clipped_tris[t];
 
 			// Project into 2d points, but still saving the new "adjusted" z,
 			// and original z in w
@@ -262,10 +258,9 @@ static void update(void) {
 
 				// Scale it up
 				projected_vertex.x *= (window_width / 2.f);
-				projected_vertex.y *=
-					-(window_height /
-					  2.f); // mult by -1 to invert in screen space
-							// as models have opposite y axis
+				// mult by -1 to invert in screen space as models have opposite
+				// y axis
+				projected_vertex.y *= -(window_height / 2.f);
 
 				// Translate point to middle of screen
 				projected_vertex.x += (window_width / 2.f);

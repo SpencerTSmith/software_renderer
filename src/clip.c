@@ -41,9 +41,13 @@ static vec3_t lerp_new_vert(vec3_t prev_vert, vec3_t curr_vert, float prev_dot,
 							float curr_dot) {
 	float lerp_factor = (prev_dot) / (prev_dot - curr_dot);
 
-	// new = prev + factor * (curr - prev)
+	/*vec3_t new_vert = vec3_sub(curr_vert, prev_vert);*/
+	/*new_vert = vec3_mul(new_vert, lerp_factor);*/
+	/*new_vert = vec3_add(new_vert, prev_vert);*/
+
+	// new = factor * (curr - prev) + prev
 	vec3_t new_vert = vec3_add(
-		prev_vert, vec3_mul(vec3_sub(curr_vert, prev_vert), lerp_factor));
+		vec3_mul(vec3_sub(curr_vert, prev_vert), lerp_factor), prev_vert);
 
 	return new_vert;
 }
@@ -87,18 +91,18 @@ void clip_polygon(polygon_t *polygon) {
 	clip_against_plane(polygon, &frustum_planes[FAR_FRUSTUM]);
 }
 
-int polygon_to_tris(polygon_t *polygon, triangle_t triangles[]) {
-	int num_tris = 0;
-	for (int i = 0; i < polygon->num_vertices - 2; i++) {
+int polygon_to_tris(polygon_t *polygon, triangle_t triangles[MAX_NUM_POLY_TRIS]) {
+	// can make (num_vert - 2) tris from any poly
+	int num_triangles = polygon->num_vertices - 2;
+	for (int i = 0; i < num_triangles; i++) {
 		vec3_t v1 = polygon->vertices[0];
 		vec3_t v2 = polygon->vertices[i + 1];
 		vec3_t v3 = polygon->vertices[i + 2];
 
-		triangles[num_tris].points[0] = vec3_to_vec4(v1);
-		triangles[num_tris].points[1] = vec3_to_vec4(v2);
-		triangles[num_tris].points[2] = vec3_to_vec4(v3);
-		num_tris++;
+		triangles[i].points[0] = vec3_to_vec4(v1);
+		triangles[i].points[1] = vec3_to_vec4(v2);
+		triangles[i].points[2] = vec3_to_vec4(v3);
 	}
 
-	return num_tris;
+	return num_triangles;
 }
