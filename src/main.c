@@ -119,13 +119,35 @@ static void process_input(void) {
 			// forward velocity control
 			if (event.key.keysym.sym == SDLK_w) {
 				camera.forward_vel =
-					vec3_mul(camera.direction, 5.0f * delta_time);
+					vec3_mul(camera.forward_direction, 5.0f * delta_time);
 				camera.position = vec3_add(camera.position, camera.forward_vel);
 			}
 			if (event.key.keysym.sym == SDLK_s) {
 				camera.forward_vel =
-					vec3_mul(camera.direction, 5.0f * delta_time);
+					vec3_mul(camera.forward_direction, 5.0f * delta_time);
 				camera.position = vec3_sub(camera.position, camera.forward_vel);
+			}
+
+			// right velocity control
+			if (event.key.keysym.sym == SDLK_d) {
+				camera.right_vel =
+					vec3_mul(camera.right_direction, 5.0f * delta_time);
+				camera.position = vec3_add(camera.position, camera.right_vel);
+				printf("Right Direction: %f, %f, %f\n",
+					   camera.right_direction.x, camera.right_direction.y,
+					   camera.right_direction.z);
+				printf("Right Velocity: %f, %f, %f\n", camera.right_vel.x,
+					   camera.right_vel.y, camera.right_vel.z);
+			}
+			if (event.key.keysym.sym == SDLK_a) {
+				camera.right_vel =
+					vec3_mul(camera.right_direction, 5.0f * delta_time);
+				camera.position = vec3_sub(camera.position, camera.right_vel);
+				printf("Right Direction: %f, %f, %f\n",
+					   camera.right_direction.x, camera.right_direction.y,
+					   camera.right_direction.z);
+				printf("Right Velocity: %f, %f, %f\n", camera.right_vel.x,
+					   camera.right_vel.y, camera.right_vel.z);
 			}
 
 			if (event.key.keysym.sym == SDLK_p)
@@ -182,20 +204,22 @@ static void update(void) {
 	vec3_t target = {0, 0, 1}; // default target, looking into world
 	mat4_t camera_rotation_yaw = mat4_make_rotation_y(camera.yaw);
 	mat4_t camera_rotation_pitch = mat4_make_rotation_x(camera.pitch);
-	camera.direction =
+	camera.forward_direction =
 		vec4_to_vec3(mat4_mul_vec4(&camera_rotation_yaw, vec3_to_vec4(target)));
-	camera.direction = vec4_to_vec3(
-		mat4_mul_vec4(&camera_rotation_pitch, vec3_to_vec4(camera.direction)));
+	camera.forward_direction = vec4_to_vec3(mat4_mul_vec4(
+		&camera_rotation_pitch, vec3_to_vec4(camera.forward_direction)));
 
-	target = vec3_add(camera.position, camera.direction);
+	camera.right_direction = (vec3_t){cosf(camera.yaw), 0, sinf(camera.yaw)};
+	/*camera.right_direction = vec3_rotate_y(camera.right_direction,
+	 * camera.yaw);*/
+
+	target = vec3_add(camera.position, camera.forward_direction);
 	mat4_t view_matrix =
 		mat4_make_look_at(camera.position, target, up_direction);
 
 	// Loop faces first, get vertices from faces, project triangle, add to array
 	int num_faces = array_size(mesh.faces);
 	for (int i = 0; i < num_faces; i++) {
-		if (i != 4)
-			continue;
 
 		// Find vertices in face
 		vec3_t face_vertices[3] = {mesh.vertices[mesh.faces[i].a],
@@ -283,16 +307,17 @@ static void update(void) {
 			float avg_z = transformed_vertices[0].z +
 						  transformed_vertices[1].z + transformed_vertices[2].z;
 
-			triangle_t triangle_to_render = {
-				.points =
-					{
-						projected_vertices[0],
-						projected_vertices[1],
-						projected_vertices[2],
-					},
-				.tex_coords = {mesh.faces[i].a_uv, mesh.faces[i].b_uv, mesh.faces[i].c_uv},
-				.color = shaded_color,
-				.avg_depth = avg_z};
+			triangle_t triangle_to_render = {.points =
+												 {
+													 projected_vertices[0],
+													 projected_vertices[1],
+													 projected_vertices[2],
+												 },
+											 .tex_coords = {mesh.faces[i].a_uv,
+															mesh.faces[i].b_uv,
+															mesh.faces[i].c_uv},
+											 .color = shaded_color,
+											 .avg_depth = avg_z};
 
 			if (num_triangles < MAX_TRIANGLES) {
 				triangles_to_render[num_triangles++] = triangle_to_render;
