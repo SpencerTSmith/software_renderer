@@ -1,5 +1,5 @@
 # Overview
-Little software renderer with minimal dependencies (SDL), make system is gcc for now.
+Little software renderer with minimal dependencies (SDL), make system is gcc only for now. There is an old branch with fewer features that comes as a visual studio project.
 
 ## Features
 - Software rasterisation
