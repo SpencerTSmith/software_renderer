@@ -22,7 +22,7 @@ float delta_time;
 
 #define MAX_TRIANGLES 8192
 triangle_t triangles_to_render[MAX_TRIANGLES];
-int num_triangles;
+int num_triangles = 0;
 
 mat4_t projection_matrix;
 light_t global_light = {.direction = {0, 0, 1}};
@@ -58,12 +58,12 @@ static void setup(void) {
 
     float aspect = (float)window_width / window_height;
     float inv_aspect = (float)window_height / window_width;
-    float fovy = M_PI / 3.0f; // radians
-    float fovx = 2 * atanf(tanf(fovy / 2) * aspect);
-    float znear = 1.0f;
-    float zfar = 20.0f;
-    projection_matrix = mat4_make_perspective(fovy, inv_aspect, znear, zfar);
-    init_frustum_planes(fovy, fovx, znear, zfar);
+    float fov_y = M_PI / 3.0f; // radians
+    float fov_x = 2 * atanf(tanf(fov_y / 2) * aspect);
+    float z_near = 1.0f;
+    float z_far = 20.0f;
+    projection_matrix = mat4_make_perspective(fov_y, inv_aspect, z_near, z_far);
+    init_frustum_planes(fov_x, fov_y, z_near, z_far);
 
     // load_redbrick_mesh_texture();
     // load_cube_mesh_data();
