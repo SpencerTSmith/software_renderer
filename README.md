@@ -1,5 +1,5 @@
 # Overview
-Little software renderer, from scratch with minimal dependencies (SDL), make system is gcc only for now. There is an old branch with fewer features that comes as a visual studio project.
+Little software renderer, from scratch with minimal dependencies (SDL2, stb_image), make system is gcc only for now. There is an old branch with fewer features that comes as a visual studio project.
 
 ## Features
 - Software rasterisation
