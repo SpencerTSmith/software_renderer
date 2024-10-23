@@ -33,8 +33,7 @@ static int previous_frame_time = 0;
 // Color buffer initialization, other setups too
 static void setup(void) {
     // Memory for color buffer
-    color_buffer =
-        (uint32_t *)malloc(sizeof(uint32_t) * window_width * window_height);
+    color_buffer = (uint32_t *)malloc(sizeof(uint32_t) * window_width * window_height);
     if (!color_buffer) {
         fprintf(stderr, "Error creating color buffer.\n");
         is_running = false;
@@ -48,9 +47,8 @@ static void setup(void) {
     }
 
     // SDL texture for rendering buffer from memory
-    color_buffer_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32,
-                                             SDL_TEXTUREACCESS_STREAMING,
-                                             window_width, window_height);
+    color_buffer_texture = SDL_CreateTexture(
+        renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
     if (!color_buffer) {
         fprintf(stderr, "Error creating color buffer texture.\n");
         is_running = false;
@@ -118,25 +116,21 @@ static void process_input(void) {
 
             // forward velocity control
             if (event.key.keysym.sym == SDLK_w) {
-                camera.forward_vel =
-                    vec3_mul(camera.forward_direction, 5.0f * delta_time);
+                camera.forward_vel = vec3_mul(camera.forward_direction, 5.0f * delta_time);
                 camera.position = vec3_add(camera.position, camera.forward_vel);
             }
             if (event.key.keysym.sym == SDLK_s) {
-                camera.forward_vel =
-                    vec3_mul(camera.forward_direction, 5.0f * delta_time);
+                camera.forward_vel = vec3_mul(camera.forward_direction, 5.0f * delta_time);
                 camera.position = vec3_sub(camera.position, camera.forward_vel);
             }
 
             // right velocity control
             if (event.key.keysym.sym == SDLK_d) {
-                camera.right_vel =
-                    vec3_mul(camera.right_direction, 5.0f * delta_time);
+                camera.right_vel = vec3_mul(camera.right_direction, 5.0f * delta_time);
                 camera.position = vec3_add(camera.position, camera.right_vel);
             }
             if (event.key.keysym.sym == SDLK_a) {
-                camera.right_vel =
-                    vec3_mul(camera.right_direction, 5.0f * delta_time);
+                camera.right_vel = vec3_mul(camera.right_direction, 5.0f * delta_time);
                 camera.position = vec3_sub(camera.position, camera.right_vel);
             }
 
@@ -144,8 +138,7 @@ static void process_input(void) {
                 render_mode = RENDER_TEXTURE_PS1;
 
             if (event.key.keysym.sym == SDLK_b)
-                cull_mode =
-                    cull_mode == CULL_BACKFACE ? CULL_NONE : CULL_BACKFACE;
+                cull_mode = cull_mode == CULL_BACKFACE ? CULL_NONE : CULL_BACKFACE;
             break;
         }
     }
@@ -154,8 +147,7 @@ static void process_input(void) {
 // Might be thought of as our vertex shader
 static void update(void) {
     // hit goal frame time
-    int time_to_wait =
-        FRAME_TARGET_TIME - (SDL_GetTicks() - previous_frame_time);
+    int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks() - previous_frame_time);
     if (time_to_wait > 0 && time_to_wait <= FRAME_TARGET_TIME) {
         SDL_Delay(time_to_wait);
     }
@@ -173,13 +165,12 @@ static void update(void) {
     mesh.rotation.z += 0.f * delta_time;
     mesh.translation.z = 5.0f;
 
-    mat4_t scale_matrix =
-        mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
+    mat4_t scale_matrix = mat4_make_scale(mesh.scale.x, mesh.scale.y, mesh.scale.z);
     mat4_t rotation_matrix_x = mat4_make_rotation_x(mesh.rotation.x);
     mat4_t rotation_matrix_y = mat4_make_rotation_y(mesh.rotation.y);
     mat4_t rotation_matrix_z = mat4_make_rotation_z(mesh.rotation.z);
-    mat4_t translation_matrix = mat4_make_translation(
-        mesh.translation.x, mesh.translation.y, mesh.translation.z);
+    mat4_t translation_matrix =
+        mat4_make_translation(mesh.translation.x, mesh.translation.y, mesh.translation.z);
 
     // Combine all transforms, scale, rotate, translate, in that order
     mat4_t world_matrix = mat4_identity();
@@ -197,8 +188,8 @@ static void update(void) {
 
     camera.forward_direction =
         vec4_to_vec3(mat4_mul_vec4(&camera_rotation_yaw, vec3_to_vec4(target)));
-    camera.forward_direction = vec4_to_vec3(mat4_mul_vec4(
-        &camera_rotation_pitch, vec3_to_vec4(camera.forward_direction)));
+    camera.forward_direction =
+        vec4_to_vec3(mat4_mul_vec4(&camera_rotation_pitch, vec3_to_vec4(camera.forward_direction)));
 
     // we can cross the global up vector with the forward direction for right
     // direction
@@ -207,17 +198,18 @@ static void update(void) {
     vec3_normalize(&camera.right_direction);
 
     target = vec3_add(camera.position, camera.forward_direction);
-    mat4_t view_matrix =
-        mat4_make_look_at(camera.position, target, up_direction);
+    mat4_t view_matrix = mat4_make_look_at(camera.position, target, up_direction);
 
     // Loop faces first, get vertices from faces, project triangle, add to array
     int num_faces = array_size(mesh.faces);
     for (int i = 0; i < num_faces; i++) {
 
         // Find vertices in face
-        vec3_t face_vertices[3] = {mesh.vertices[mesh.faces[i].a],
-                                   mesh.vertices[mesh.faces[i].b],
-                                   mesh.vertices[mesh.faces[i].c]};
+        vec3_t face_vertices[3] = {
+            mesh.vertices[mesh.faces[i].a],
+            mesh.vertices[mesh.faces[i].b],
+            mesh.vertices[mesh.faces[i].c],
+        };
 
         // Transform vertices to world space
         vec4_t transformed_vertices[3];
@@ -225,12 +217,10 @@ static void update(void) {
             vec4_t transformed_vertex = vec3_to_vec4(face_vertices[j]);
 
             // To world space
-            transformed_vertex =
-                mat4_mul_vec4(&world_matrix, transformed_vertex);
+            transformed_vertex = mat4_mul_vec4(&world_matrix, transformed_vertex);
 
             // To camera space
-            transformed_vertex =
-                mat4_mul_vec4(&view_matrix, transformed_vertex);
+            transformed_vertex = mat4_mul_vec4(&view_matrix, transformed_vertex);
 
             transformed_vertices[j] = transformed_vertex;
         }
@@ -255,7 +245,21 @@ static void update(void) {
         }
 
         // Perform frustum clipping
-        polygon_t clip_poly = {.vertices = {A, B, C}, .num_vertices = 3};
+        polygon_t clip_poly = {
+            .vertices =
+                {
+                    A,
+                    B,
+                    C,
+                },
+            .tex_coords =
+                {
+                    mesh.faces[i].a_uv,
+                    mesh.faces[i].b_uv,
+                    mesh.faces[i].c_uv,
+                },
+            .num_vertices = 3,
+        };
         clip_polygon(&clip_poly);
 
         // Back to triangles
@@ -271,8 +275,8 @@ static void update(void) {
             vec4_t projected_vertices[3];
             for (int j = 0; j < 3; j++) {
                 // Project to screen space, also performs perspective divide
-                projected_vertices[j] = mat4_mul_vec4_project(
-                    &projection_matrix, clipped_triangle.points[j]);
+                projected_vertices[j] =
+                    mat4_mul_vec4_project(&projection_matrix, clipped_triangle.points[j]);
 
                 // Scale it up
                 projected_vertices[j].x *= (window_width / 2.f);
@@ -288,29 +292,30 @@ static void update(void) {
             // Flat shading
             vec3_normalize(&global_light.direction);
             vec3_normalize(&face_normal);
-            float light_alignment =
-                -vec3_dot(global_light.direction,
-                          face_normal); // Negative because pointing at the
-                                        // light means more light
-            uint32_t shaded_color =
-                light_apply_intensity(mesh.faces[i].color, light_alignment);
+            // Negative because pointing at the light means more light
+            float light_alignment = -vec3_dot(global_light.direction, face_normal);
+            uint32_t shaded_color = light_apply_intensity(mesh.faces[i].color, light_alignment);
 
-            // Not necessary to divide by 3 here, does not change relative
-            // ordering
-            float avg_z = transformed_vertices[0].z +
-                          transformed_vertices[1].z + transformed_vertices[2].z;
+            // Not necessary to divide by 3 here, does not change relative ordering
+            float avg_z =
+                transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z;
 
-            triangle_t triangle_to_render = {.points =
-                                                 {
-                                                     projected_vertices[0],
-                                                     projected_vertices[1],
-                                                     projected_vertices[2],
-                                                 },
-                                             .tex_coords = {mesh.faces[i].a_uv,
-                                                            mesh.faces[i].b_uv,
-                                                            mesh.faces[i].c_uv},
-                                             .color = shaded_color,
-                                             .avg_depth = avg_z};
+            triangle_t triangle_to_render = {
+                .points =
+                    {
+                        projected_vertices[0],
+                        projected_vertices[1],
+                        projected_vertices[2],
+                    },
+                .tex_coords =
+                    {
+                        mesh.faces[i].a_uv,
+                        mesh.faces[i].b_uv,
+                        mesh.faces[i].c_uv,
+                    },
+                .color = shaded_color,
+                .avg_depth = avg_z,
+            };
 
             if (num_triangles < MAX_TRIANGLES) {
                 triangles_to_render[num_triangles++] = triangle_to_render;
@@ -338,12 +343,10 @@ static void render(void) {
                                        // to run from top to bottom
 
         // Draw Textured Triangles
-        if (render_mode == RENDER_TEXTURE ||
-            render_mode == RENDER_TEXTURE_WIRE) {
-            draw_textured_triangle(
-                triangle,
-                mesh_texture); // passing triangle by reference
-                               // causes some to not be rendered
+        if (render_mode == RENDER_TEXTURE || render_mode == RENDER_TEXTURE_WIRE) {
+            draw_textured_triangle(triangle,
+                                   mesh_texture); // passing triangle by reference
+                                                  // causes some to not be rendered
         }
 
         // Draw Filled Triangles
@@ -352,23 +355,18 @@ static void render(void) {
         }
 
         // Draw Unfilled Triangles
-        if (render_mode == RENDER_WIRE_FRAME ||
-            render_mode == RENDER_WIRE_VERTS ||
-            render_mode == RENDER_FILL_WIRE ||
-            render_mode == RENDER_TEXTURE_WIRE) {
-            draw_triangle(
-                roundf(triangle.points[0].x), roundf(triangle.points[0].y),
-                roundf(triangle.points[1].x), roundf(triangle.points[1].y),
-                roundf(triangle.points[2].x), roundf(triangle.points[2].y),
-                0xFF0000FF);
+        if (render_mode == RENDER_WIRE_FRAME || render_mode == RENDER_WIRE_VERTS ||
+            render_mode == RENDER_FILL_WIRE || render_mode == RENDER_TEXTURE_WIRE) {
+            draw_triangle(roundf(triangle.points[0].x), roundf(triangle.points[0].y),
+                          roundf(triangle.points[1].x), roundf(triangle.points[1].y),
+                          roundf(triangle.points[2].x), roundf(triangle.points[2].y), 0xFF0000FF);
         }
 
         // Draw Vertices
         if (render_mode == RENDER_WIRE_VERTS) {
             for (int j = 0; j < 3; j++) {
-                draw_rectangle(roundf(triangle.points[j].x) - 3,
-                               roundf(triangle.points[j].y) - 3, 6, 6,
-                               0xFF0000FF);
+                draw_rectangle(roundf(triangle.points[j].x) - 3, roundf(triangle.points[j].y) - 3,
+                               6, 6, 0xFF0000FF);
             }
         }
 

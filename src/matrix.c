@@ -70,36 +70,35 @@ mat4_t mat4_make_look_at(vec3_t eye, vec3_t target, vec3_t up) {
     vec3_normalize(&x);
     vec3_t y = vec3_cross(z, x); // already normal
 
-    mat4_t v = {{{x.x, x.y, x.z, -vec3_dot(x, eye)},
-                 {y.x, y.y, y.z, -vec3_dot(y, eye)},
-                 {z.x, z.y, z.z, -vec3_dot(z, eye)},
-                 {0.f, 0.f, 0.f, 1.f}}};
+    mat4_t v = {
+        {{x.x, x.y, x.z, -vec3_dot(x, eye)},
+         {y.x, y.y, y.z, -vec3_dot(y, eye)},
+         {z.x, z.y, z.z, -vec3_dot(z, eye)},
+         {0.f, 0.f, 0.f, 1.f}},
+    };
 
     return v;
 }
 
-mat4_t mat4_make_perspective(float fov, float inv_aspect, float znear,
-                             float zfar) {
+mat4_t mat4_make_perspective(float fov, float inv_aspect, float znear, float zfar) {
     mat4_t p = {.m = {{0}}};
 
     p.m[0][0] = inv_aspect * (1.0f / tan(fov / 2.0f)); // x normalization
     p.m[1][1] = (1.0f / tan(fov / 2.0f));              // y normalization
     p.m[2][2] = zfar / (zfar - znear);                 // z normalization
     p.m[2][3] = (-zfar * znear) / (zfar - znear);      // z offset by znear
-    p.m[3][2] = 1.0f; // z stored in w, for perspective divide
+    p.m[3][2] = 1.0f;                                  // z stored in w, for perspective divide
 
     return p;
 }
 
 vec4_t mat4_mul_vec4(const mat4_t *m, vec4_t v) {
-    vec4_t result = {.x = m->m[0][0] * v.x + m->m[0][1] * v.y +
-                          m->m[0][2] * v.z + m->m[0][3] * v.w,
-                     .y = m->m[1][0] * v.x + m->m[1][1] * v.y +
-                          m->m[1][2] * v.z + m->m[1][3] * v.w,
-                     .z = m->m[2][0] * v.x + m->m[2][1] * v.y +
-                          m->m[2][2] * v.z + m->m[2][3] * v.w,
-                     .w = m->m[3][0] * v.x + m->m[3][1] * v.y +
-                          m->m[3][2] * v.z + m->m[3][3] * v.w};
+    vec4_t result = {
+        .x = m->m[0][0] * v.x + m->m[0][1] * v.y + m->m[0][2] * v.z + m->m[0][3] * v.w,
+        .y = m->m[1][0] * v.x + m->m[1][1] * v.y + m->m[1][2] * v.z + m->m[1][3] * v.w,
+        .z = m->m[2][0] * v.x + m->m[2][1] * v.y + m->m[2][2] * v.z + m->m[2][3] * v.w,
+        .w = m->m[3][0] * v.x + m->m[3][1] * v.y + m->m[3][2] * v.z + m->m[3][3] * v.w,
+    };
 
     return result;
 }

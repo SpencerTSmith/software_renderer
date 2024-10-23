@@ -2,15 +2,15 @@
 #define VECTOR_H
 
 typedef struct {
-	float x, y;
+    float x, y;
 } vec2_t;
 
 typedef struct {
-	float x, y, z;
+    float x, y, z;
 } vec3_t;
 
 typedef struct {
-	float x, y, z, w;
+    float x, y, z, w;
 } vec4_t;
 
 // 2d functions
@@ -21,8 +21,7 @@ vec2_t vec2_mul(vec2_t v, float s);
 vec2_t vec2_div(vec2_t v, float s);
 float vec2_dot(vec2_t a, vec2_t b);
 void vec2_normalize(vec2_t *v);
-// No such literal math thing as 2D cross product
-// but useful in practice, just determinant really
+// No such literal math thing as 2D cross product but useful in practice, just determinant really
 float vec2_cross(vec2_t a, vec2_t b);
 
 // 3d functions

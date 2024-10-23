@@ -28,9 +28,8 @@ bool initialize_window(void) {
     window_width = display_mode.w;
     window_height = display_mode.h;
 
-    window =
-        SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                         window_width, window_height, SDL_WINDOW_BORDERLESS);
+    window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, window_width,
+                              window_height, SDL_WINDOW_BORDERLESS);
 
     if (!window) {
         fprintf(stderr, "Error creating SDL window.\n");
@@ -84,8 +83,7 @@ void draw_line(int x0, int y0, int x1, int y1, uint32_t color) {
     // entire length,
     //	comment out ternary to see what it looks like without... gaps in steep
     // lines
-    int side_length =
-        abs(delta_x) >= abs(delta_y) ? abs(delta_x) : abs(delta_y);
+    int side_length = abs(delta_x) >= abs(delta_y) ? abs(delta_x) : abs(delta_y);
 
     // Per step increase
     float x_inc = delta_x / (float)side_length; // either one or the slope
@@ -101,8 +99,7 @@ void draw_line(int x0, int y0, int x1, int y1, uint32_t color) {
     }
 }
 
-void draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2,
-                   uint32_t color) {
+void draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color) {
     draw_line(x0, y0, x1, y1, color);
     draw_line(x1, y1, x2, y2, color);
     draw_line(x2, y2, x0, y0, color);
