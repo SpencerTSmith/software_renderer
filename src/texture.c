@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <stb/stb_image.h>
+
 #include "display.h"
 #include "vector.h"
 
@@ -1047,19 +1049,23 @@ void load_redbrick_mesh_texture() {
 }
 
 void load_png_texture_data(const char *filename) {
-    upng_t *png = upng_new_from_file(filename);
-    if (png != NULL) {
-        upng_decode(png);
-        if (upng_get_error(png) == UPNG_EOK) {
-            texture_width = upng_get_width(png);
-            texture_height = upng_get_height(png);
-            mesh_texture = (uint32_t *)malloc(upng_get_size(png));
-            if (mesh_texture != NULL && upng_get_buffer(png) != NULL) {
-                memcpy(mesh_texture, upng_get_buffer(png), upng_get_size(png));
-            }
-        }
+    int channels;
+    stbi_uc *bytes = stbi_load(filename, &texture_width, &texture_height, &channels, 4);
+
+    if (bytes == NULL) {
+        fprintf(stderr, "Error loading texture data");
+        return;
     }
-    upng_free(png);
+
+    int texture_size = texture_width * texture_height;
+
+    mesh_texture = (uint32_t *)malloc(texture_size * sizeof(uint32_t));
+
+    for (int i = 0, j = 0; i < texture_size; i++, j += 4) {
+        mesh_texture[i] =
+            (bytes[j + 3] << 24) | (bytes[j + 2] << 16) | (bytes[j + 1] << 8) | bytes[j];
+    }
+    stbi_image_free(bytes);
 }
 
 vec3_t barycentric_weights(vec2_t a, vec2_t b, vec2_t c, vec2_t p) {
