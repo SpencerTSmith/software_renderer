@@ -1038,12 +1038,12 @@ const uint8_t REDBRICK_TEXTURE[] = {
     0x54, 0x54, 0x54, 0xff, 0x54, 0x54, 0x54, 0xff, 0x54, 0x54, 0x54, 0xff, 0x54, 0x54, 0x54, 0xff,
 };
 
-uint32_t *mesh_texture = NULL;
+color_t *mesh_texture = NULL;
 
-void texture_free(uint32_t *texture) { free(texture); }
+void texture_free(color_t *texture) { free(texture); }
 
 void load_redbrick_mesh_texture() {
-    mesh_texture = (uint32_t *)REDBRICK_TEXTURE;
+    mesh_texture = (color_t *)REDBRICK_TEXTURE;
     texture_height = 64;
     texture_width = 64;
 }
@@ -1059,7 +1059,7 @@ void load_png_texture_data(const char *filename) {
 
     int texture_size = texture_width * texture_height;
 
-    mesh_texture = (uint32_t *)malloc(texture_size * sizeof(uint32_t));
+    mesh_texture = (color_t *)malloc(texture_size * sizeof(color_t));
 
     for (int i = 0, j = 0; i < texture_size; i++, j += 4) {
         mesh_texture[i] =
@@ -1096,7 +1096,7 @@ vec3_t barycentric_weights(vec2_t a, vec2_t b, vec2_t c, vec2_t p) {
 }
 
 void draw_affine_texel(int x, int y, vec2_t a, vec2_t b, vec2_t c, tex2_t a_uv, tex2_t b_uv,
-                       tex2_t c_uv, uint32_t *texture) {
+                       tex2_t c_uv, color_t *texture) {
     vec2_t p = {x, y};
     vec3_t weights = barycentric_weights(a, b, c, p);
     float alpha = weights.x;
@@ -1117,7 +1117,7 @@ void draw_affine_texel(int x, int y, vec2_t a, vec2_t b, vec2_t c, tex2_t a_uv, 
 }
 
 void draw_texel(int x, int y, vec4_t a, vec4_t b, vec4_t c, tex2_t a_uv, tex2_t b_uv, tex2_t c_uv,
-                uint32_t *texture) {
+                color_t *texture) {
     vec2_t p = {x, y};
     vec2_t a_2 = vec4_to_vec2(a);
     vec2_t b_2 = vec4_to_vec2(b);

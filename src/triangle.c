@@ -47,7 +47,7 @@ void sort_triangle_by_y(triangle_t *triangle) {
     }
 }
 
-static void draw_w_pixel(int x, int y, vec4_t a, vec4_t b, vec4_t c, uint32_t color) {
+static void draw_w_pixel(int x, int y, vec4_t a, vec4_t b, vec4_t c, color_t color) {
     vec2_t p = {x, y};
     vec2_t a_2 = vec4_to_vec2(a);
     vec2_t b_2 = vec4_to_vec2(b);
@@ -149,7 +149,7 @@ void draw_filled_triangle(triangle_t triangle) {
     fill_flat_top_triangle(&triangle);
 }
 
-static void affine_texture_flat_bottom_triangle(const triangle_t *triangle, uint32_t *texture) {
+static void affine_texture_flat_bottom_triangle(const triangle_t *triangle, color_t *texture) {
     vec4_t a = triangle->points[0];
     vec4_t b = triangle->points[1];
     vec4_t c = triangle->points[2];
@@ -191,7 +191,7 @@ static void affine_texture_flat_bottom_triangle(const triangle_t *triangle, uint
     }
 }
 
-static void affine_texture_flat_top_triangle(const triangle_t *triangle, uint32_t *texture) {
+static void affine_texture_flat_top_triangle(const triangle_t *triangle, color_t *texture) {
     vec4_t a = triangle->points[0];
     vec4_t b = triangle->points[1];
     vec4_t c = triangle->points[2];
@@ -231,7 +231,7 @@ static void affine_texture_flat_top_triangle(const triangle_t *triangle, uint32_
     }
 }
 
-void draw_affine_textured_triangle(triangle_t triangle, uint32_t *texture) {
+void draw_affine_textured_triangle(triangle_t triangle, color_t *texture) {
     // already flat bottom
     if (roundf(triangle.points[1].y) == roundf(triangle.points[2].y)) {
         affine_texture_flat_bottom_triangle(&triangle, texture);
@@ -248,7 +248,7 @@ void draw_affine_textured_triangle(triangle_t triangle, uint32_t *texture) {
     affine_texture_flat_top_triangle(&triangle, texture);
 }
 
-static void texture_flat_bottom_triangle(const triangle_t *triangle, uint32_t *texture) {
+static void texture_flat_bottom_triangle(const triangle_t *triangle, color_t *texture) {
     vec4_t a = triangle->points[0];
     vec4_t b = triangle->points[1];
     vec4_t c = triangle->points[2];
@@ -289,7 +289,7 @@ static void texture_flat_bottom_triangle(const triangle_t *triangle, uint32_t *t
     }
 }
 
-static void texture_flat_top_triangle(const triangle_t *triangle, uint32_t *texture) {
+static void texture_flat_top_triangle(const triangle_t *triangle, color_t *texture) {
     vec4_t a = triangle->points[0];
     vec4_t b = triangle->points[1];
     vec4_t c = triangle->points[2];
@@ -328,7 +328,7 @@ static void texture_flat_top_triangle(const triangle_t *triangle, uint32_t *text
     }
 }
 
-void draw_textured_triangle(triangle_t triangle, uint32_t *texture) {
+void draw_textured_triangle(triangle_t triangle, color_t *texture) {
     // already flat bottom
     if (roundf(triangle.points[1].y) == roundf(triangle.points[2].y)) {
         texture_flat_bottom_triangle(&triangle, texture);

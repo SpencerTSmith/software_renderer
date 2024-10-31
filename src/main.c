@@ -33,7 +33,7 @@ static int previous_frame_time = 0;
 // Color buffer initialization, other setups too
 static void setup(void) {
     // Memory for color buffer
-    color_buffer = (uint32_t *)malloc(sizeof(uint32_t) * window_width * window_height);
+    color_buffer = (color_t *)malloc(sizeof(color_t) * window_width * window_height);
     if (!color_buffer) {
         fprintf(stderr, "Error creating color buffer.\n");
         is_running = false;
@@ -294,7 +294,7 @@ static void update(void) {
             vec3_normalize(&face_normal);
             // Negative because pointing at the light means more light
             float light_alignment = -vec3_dot(global_light.direction, face_normal);
-            uint32_t shaded_color = light_apply_intensity(mesh.faces[i].color, light_alignment);
+            color_t shaded_color = light_apply_intensity(mesh.faces[i].color, light_alignment);
 
             // Not necessary to divide by 3 here, does not change relative ordering
             float avg_z =

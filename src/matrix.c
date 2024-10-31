@@ -68,7 +68,9 @@ mat4_t mat4_make_look_at(vec3_t eye, vec3_t target, vec3_t up) {
     vec3_normalize(&z);
     vec3_t x = vec3_cross(up, z);
     vec3_normalize(&x);
-    vec3_t y = vec3_cross(z, x); // already normal
+
+    // already normal
+    vec3_t y = vec3_cross(z, x);
 
     mat4_t v = {
         {{x.x, x.y, x.z, -vec3_dot(x, eye)},
@@ -117,6 +119,7 @@ vec4_t mat4_mul_vec4_project(const mat4_t *p, vec4_t v) {
     return result;
 }
 
+// Easily vectorized when -O2
 mat4_t mat4_mul_mat4(const mat4_t *a, const mat4_t *b) {
     mat4_t result;
 
