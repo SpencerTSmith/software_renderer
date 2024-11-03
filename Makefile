@@ -1,5 +1,5 @@
 build: clean
-	gcc -g -Wall -std=c99 ./src/*.c -lSDL2 -lm -o renderer
+	gcc -g -Wall -Wextra -std=c99 ./src/*.c -lSDL2 -lm -o renderer
 fast: clean
 	gcc -std=c99 -O3 ./src/*.c -lSDL2 -lm -o renderer_fast
 	./renderer_fast

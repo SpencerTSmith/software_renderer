@@ -11,7 +11,7 @@
 // 0xAABBGGRR
 typedef uint32_t color_t;
 
-enum render_mode {
+extern enum render_mode {
     RENDER_WIRE_FRAME,
     RENDER_WIRE_VERTS,
     RENDER_FILL,
@@ -19,9 +19,9 @@ enum render_mode {
     RENDER_TEXTURE,
     RENDER_TEXTURE_WIRE,
     RENDER_TEXTURE_PS1
-} extern render_mode;
+} render_mode;
 
-enum cull_mode { CULL_BACKFACE, CULL_NONE } extern cull_mode;
+extern enum cull_mode { CULL_BACKFACE, CULL_NONE } cull_mode;
 
 extern SDL_Window *window;
 extern SDL_Renderer *renderer;
