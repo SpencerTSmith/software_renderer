@@ -51,23 +51,3 @@ void array_free(void *array) {
     if (array != NULL)
         free(ARRAY_RAW_DATA(array));
 }
-
-void darray_reserve(darray_t array, int size, size_t element_size) {
-    if (array.occupied == 0 || array.data == NULL) {
-        array.capacity = size;
-        array.data = malloc(size * element_size);
-
-    } else if (array.occupied + size <= array.occupied) {
-        array.occupied += size;
-    } else {
-        int needed_size = array.occupied + size;
-        int double_size = array.capacity * 2;
-
-        int new_capacity = needed_size > double_size ? needed_size : double_size;
-
-        array.data = realloc(array.data, new_capacity);
-        array.capacity = new_capacity;
-    }
-}
-
-void darray_pushback(darray_t array, const void *value) {}
