@@ -16,10 +16,18 @@ void *array_hold(void *array, int count, int element_size);
 int array_size(void *array);
 void array_free(void *array);
 
-#define DARRAY(type)                                                                               \
+#define dynarray(type)                                                                             \
     typedef struct {                                                                               \
         size_t capacity, occupied;                                                                 \
         type *data;                                                                                \
-    } type##a;
+    } type##header;
+
+#define dynarray_append(array, value)                                                              \
+    do {                                                                                           \
+        (array) = dynarray_reserve((array), 1, sizeof(*(array)));                                  \
+        (array)[array_size(array) - 1] = (value);                                                  \
+    } while (0)
+
+void *dynarray_init(void *array, size_t count, size_t type_size);
 
 #endif

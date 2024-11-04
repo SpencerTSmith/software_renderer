@@ -25,11 +25,9 @@ void *array_hold(void *array, int count, int element_size) {
     } else {
         int needed_size = ARRAY_OCCUPIED(array) + count;
         int double_capacity = ARRAY_CAPACITY(array) * 2;
-        int new_capacity = needed_size > double_capacity
-                               ? needed_size
-                               : double_capacity; // double the capacity, if not enough,
-                                                  // allocate exactly the needed size
 
+        // double the capacity, if not enough, allocate exactly the needed size
+        int new_capacity = needed_size > double_capacity ? needed_size : double_capacity;
         int adjusted_size = header_size + (new_capacity * element_size);
 
         int *result = (int *)realloc(ARRAY_RAW_DATA(array), adjusted_size);
