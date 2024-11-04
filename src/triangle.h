@@ -20,8 +20,19 @@ typedef struct {
 
 // Screen space coordinates, clockwise
 typedef struct {
-    vec4_t points[3];
-    tex2_t tex_coords[3];
+    // access it like an array or by name
+    union {
+        vec4_t points[3];
+        struct {
+            vec4_t a, b, c;
+        };
+    };
+    union {
+        tex2_t tex_coords[3];
+        struct {
+            tex2_t a_uv, b_uv, c_uv;
+        };
+    };
     color_t color;
     float avg_depth;
 } triangle_t;
