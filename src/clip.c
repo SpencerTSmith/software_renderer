@@ -33,41 +33,60 @@ void init_frustum_planes(float fov_x, float fov_y, float z_near, float z_far) {
     frustum_planes[FAR_FRUSTUM].normal = (vec3_t){0, 0, -1};
 }
 
-static vec3_t lerp_new_vert(vec3_t prev_vert, vec3_t curr_vert, float prev_dot, float curr_dot) {
-    float lerp_factor = (prev_dot) / (prev_dot - curr_dot);
-
-    // new = factor * (curr - prev) + prev
-    vec3_t new_vert = vec3_add(vec3_mul(vec3_sub(curr_vert, prev_vert), lerp_factor), prev_vert);
-
-    return new_vert;
+static float lerp_float(float a, float b, float lerp_factor) {
+    // new = factor * (b - a) + a
+    return lerp_factor * (b - a) + a;
 }
 
 static void clip_against_plane(polygon_t *polygon, const plane_t *frust_plane) {
     vec3_t plane_point = frust_plane->point;
     vec3_t plane_norm = frust_plane->normal;
 
-    vec3_t inside_plane[MAX_NUM_POLY_VERTS];
+    vec3_t inside_verts[MAX_NUM_POLY_VERTS];
+    tex2_t inside_texcoords[MAX_NUM_POLY_VERTS];
     int num_in = 0;
 
     vec3_t prev_vert = polygon->vertices[polygon->num_vertices - 1];
+    tex2_t prev_texcoord = polygon->tex_coords[polygon->num_vertices - 1];
     float prev_dot = vec3_dot(vec3_sub(prev_vert, plane_point), plane_norm);
+
     for (int i = 0; i < polygon->num_vertices; i++) {
         vec3_t curr_vert = polygon->vertices[i];
+        tex2_t curr_texcoord = polygon->tex_coords[i];
         float curr_dot = vec3_dot(vec3_sub(curr_vert, plane_point), plane_norm);
 
-        if (curr_dot * prev_dot < 0.0f) { // From in-vert to out-vert/vice versa
-            vec3_t new_vert = lerp_new_vert(prev_vert, curr_vert, prev_dot, curr_dot);
-            inside_plane[num_in++] = new_vert;
+        // From in-vert to out-vert/vice versa, so we need a new vert on the plane
+        if (curr_dot * prev_dot < 0.0f) {
+            float lerp_factor = prev_dot / (prev_dot - curr_dot);
+            vec3_t new_vert = {
+                .x = lerp_float(prev_vert.x, curr_vert.x, lerp_factor),
+                .y = lerp_float(prev_vert.y, curr_vert.y, lerp_factor),
+                .z = lerp_float(prev_vert.z, curr_vert.z, lerp_factor),
+            };
+            tex2_t new_texcoord = {
+                .u = lerp_float(prev_texcoord.u, curr_texcoord.u, lerp_factor),
+                .v = lerp_float(prev_texcoord.v, curr_texcoord.v, lerp_factor),
+            };
+
+            inside_verts[num_in] = new_vert;
+            inside_texcoords[num_in] = new_texcoord;
+            num_in++;
         }
 
-        if (curr_dot > 0.0f) { // Inside plane
-            inside_plane[num_in++] = curr_vert;
+        // Inside plane
+        if (curr_dot > 0.0f) {
+            inside_verts[num_in] = curr_vert;
+            inside_texcoords[num_in] = curr_texcoord;
+            num_in++;
         }
-        prev_dot = curr_dot;
+
         prev_vert = curr_vert;
+        prev_texcoord = curr_texcoord;
+        prev_dot = curr_dot;
     }
 
-    memcpy(polygon->vertices, inside_plane, sizeof(inside_plane));
+    memcpy(polygon->vertices, inside_verts, sizeof(inside_verts));
+    memcpy(polygon->tex_coords, inside_texcoords, sizeof(inside_texcoords));
     polygon->num_vertices = num_in;
 }
 
@@ -91,6 +110,9 @@ int polygon_to_tris(polygon_t *polygon, triangle_t triangles[MAX_NUM_POLY_TRIS])
         triangles[i].points[0] = vec3_to_vec4(v1);
         triangles[i].points[1] = vec3_to_vec4(v2);
         triangles[i].points[2] = vec3_to_vec4(v3);
+        triangles[i].tex_coords[0] = polygon->tex_coords[0];
+        triangles[i].tex_coords[1] = polygon->tex_coords[i + 1];
+        triangles[i].tex_coords[2] = polygon->tex_coords[i + 2];
     }
 
     return num_triangles;
