@@ -66,8 +66,8 @@ static void setup(void) {
     // load_redbrick_mesh_texture();
     // load_cube_mesh_data();
 
-    load_png_texture_data("./assets/cube.png");
-    load_obj_file_data("./assets/cube.obj");
+    load_png_texture_data("./assets/f22.png");
+    load_obj_file_data("./assets/f22.obj");
 }
 
 // Poll for input while running
@@ -309,9 +309,9 @@ static void update(void) {
                     },
                 .tex_coords =
                     {
-                        mesh.faces[i].a_uv,
-                        mesh.faces[i].b_uv,
-                        mesh.faces[i].c_uv,
+                        clipped_triangle.a_uv,
+                        clipped_triangle.b_uv,
+                        clipped_triangle.c_uv,
                     },
                 .color = shaded_color,
                 .avg_depth = avg_z,
