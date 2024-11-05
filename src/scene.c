@@ -4,6 +4,7 @@
 #include "scene.h"
 
 #define M_PI 3.14159265358979323846
+#define AVG_N_TRIANGLES 4192
 
 // Initialize all scene elements:
 // meshes, lights, the camera, projection matrix, frustum planes
@@ -53,11 +54,12 @@ void scene_free(scene_t *scene) {
     int num_meshes = array_size(scene->meshes);
     for (int i = 0; i < num_meshes; i++) {
         mesh_free(&scene->meshes[i]);
+        array_free(scene->screen_meshes[i].triangles);
     }
+    // free dynamic array of screen_meshes
+    array_free(scene->screen_meshes);
+
     // free the dynamic list of meshes
     array_free(scene->meshes);
     *scene = (scene_t){0};
-
-    // free dynamic array of screen_meshes
-    array_free(scene->screen_meshes);
 }

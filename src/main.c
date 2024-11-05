@@ -96,6 +96,14 @@ static void process_input(camera_t *camera) {
 
 // Might be thought of as our vertex shader, takes a scene and transforms all the meshes from model
 // space into screen space
+// stages:
+// Model Space
+// World Space (verts * world matrix, origin is now world origin)
+// Camera Space (verts * view matrix, origin is now camera position)
+// Clip (don't send triangles facing away from the camera to be rendered... or if outside frustum)
+// Project (verts * projection matrix)
+// Image Space (verts / og_z)
+// Screen Space (transform to center of screen)
 static void update(scene_t *scene) {
     // hit goal frame time
     int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks() - previous_frame_time);
@@ -151,7 +159,7 @@ static void update(scene_t *scene) {
             };
 
             // Transform vertices to view space
-            vec4_t transformed_vertices[3];
+            vec3_t transformed_vertices[3];
             for (int j = 0; j < 3; j++) {
                 vec4_t transformed_vertex = vec3_to_vec4(face_vertices[j]);
 
@@ -161,20 +169,14 @@ static void update(scene_t *scene) {
                 // To camera space
                 transformed_vertex = mat4_mul_vec4(&view_matrix, transformed_vertex);
 
-                transformed_vertices[j] = transformed_vertex;
+                transformed_vertices[j] = vec4_to_vec3(transformed_vertex);
             }
 
-            // Calculate normal of face for purposes of lighting and culling
-            vec3_t A = vec4_to_vec3(transformed_vertices[0]);
-            vec3_t B = vec4_to_vec3(transformed_vertices[1]);
-            vec3_t C = vec4_to_vec3(transformed_vertices[2]);
+            // Shading and backface culling need triangle normal
+            vec3_t face_normal = triangle_normal(transformed_vertices);
 
-            vec3_t AB = vec3_sub(B, A);
-            vec3_t AC = vec3_sub(C, A);
-
-            vec3_t face_normal = vec3_cross(AB, AC);
             // origin is now camera position after camera space transformation
-            vec3_t camera_ray = vec3_sub((vec3_t){0, 0, 0}, A);
+            vec3_t camera_ray = vec3_sub((vec3_t){0, 0, 0}, transformed_vertices[1]);
 
             // Skip projecting and pushing this triangle to render, if face is
             // looking away from camera
@@ -187,9 +189,9 @@ static void update(scene_t *scene) {
             polygon_t clip_poly = {
                 .vertices =
                     {
-                        A,
-                        B,
-                        C,
+                        transformed_vertices[0],
+                        transformed_vertices[1],
+                        transformed_vertices[2],
                     },
                 .tex_coords =
                     {
@@ -256,19 +258,17 @@ static void update(scene_t *scene) {
                     .avg_depth = avg_z,
                 };
 
-                // if (render_mesh->num_triangles < MAX_TRIANGLES) {
-                //     render_mesh->triangles[render_mesh->num_triangles++] = triangle_to_render;
-                // }
                 array_push(render_mesh->triangles, triangle_to_render);
+                render_mesh->texture = mesh->texture;
             }
         }
 
         // Sorting painters algorithm, like old days when memory was more
         // expensive
-        // if (should_render_ps1()) {
-        //     qsort(render_mesh->triangles, render_mesh->num_triangles++,
-        //           sizeof(render_mesh->triangles), triangle_painter_compare);
-        // }
+        if (should_render_ps1()) {
+            qsort(render_mesh->triangles, array_size(render_mesh->triangles),
+                  sizeof(*(render_mesh->triangles)), triangle_painter_compare);
+        }
     }
 }
 
@@ -280,7 +280,6 @@ static void render(scene_t *scene) {
 
     int num_meshes = array_size(scene->meshes);
     for (int m = 0; m < num_meshes; m++) {
-        texture_t mesh_texture = scene->meshes[m].texture;
         screen_mesh_t *render_mesh = &scene->screen_meshes[m];
 
         int num_triangles = array_size(render_mesh->triangles);
@@ -293,7 +292,7 @@ static void render(scene_t *scene) {
 
             // Draw Textured Triangles
             if (should_render_texture()) {
-                draw_textured_triangle(triangle, &mesh_texture);
+                draw_textured_triangle(triangle, &render_mesh->texture);
             }
 
             // Draw Filled Triangles
@@ -318,7 +317,7 @@ static void render(scene_t *scene) {
 
             // SECRET!
             if (should_render_ps1()) {
-                draw_affine_textured_triangle(triangle, &mesh_texture);
+                draw_affine_textured_triangle(triangle, &render_mesh->texture);
             }
         }
     }

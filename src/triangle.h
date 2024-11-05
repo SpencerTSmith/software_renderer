@@ -38,6 +38,8 @@ typedef struct {
     float avg_depth;
 } triangle_t;
 
+vec3_t triangle_normal(vec3_t points[3]);
+
 int triangle_painter_compare(const void *t1, const void *t2);
 
 void sort_triangle_by_y(triangle_t *triangle);

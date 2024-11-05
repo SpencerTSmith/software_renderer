@@ -28,6 +28,17 @@ int triangle_painter_compare(const void *t1, const void *t2) {
     return (avg1 > avg2) ? -1 : (avg2 > avg1);
 }
 
+vec3_t triangle_normal(vec3_t points[3]) {
+    vec3_t A = points[0];
+    vec3_t B = points[1];
+    vec3_t C = points[2];
+
+    vec3_t AB = vec3_sub(B, A);
+    vec3_t AC = vec3_sub(C, A);
+
+    return vec3_cross(AB, AC);
+};
+
 // Does change the triangle, not const
 void sort_triangle_by_y(triangle_t *triangle) {
     // sort vertex coordinates by "ascending" y's, remember y grows downwards in
