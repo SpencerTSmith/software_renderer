@@ -11,8 +11,7 @@
 
 // collection of transformed and projected triangles, from scene meshes
 typedef struct {
-    triangle_t triangles[MAX_TRIANGLES];
-    int num_triangles;
+    triangle_t *triangles; // dynamic array of triangles
 } screen_mesh_t;
 
 typedef struct {

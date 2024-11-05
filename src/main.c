@@ -122,7 +122,7 @@ static void update(scene_t *scene) {
         screen_mesh_t *render_mesh = &scene->screen_meshes[m];
 
         // reset the triangles each frame
-        render_mesh->num_triangles = 0;
+        array_reset(render_mesh->triangles);
 
         mat4_t scale_matrix = mat4_make_scale(mesh->scale.x, mesh->scale.y, mesh->scale.z);
         mat4_t rotation_matrix_x = mat4_make_rotation_x(mesh->rotation.x);
@@ -256,18 +256,19 @@ static void update(scene_t *scene) {
                     .avg_depth = avg_z,
                 };
 
-                if (render_mesh->num_triangles < MAX_TRIANGLES) {
-                    render_mesh->triangles[render_mesh->num_triangles++] = triangle_to_render;
-                }
+                // if (render_mesh->num_triangles < MAX_TRIANGLES) {
+                //     render_mesh->triangles[render_mesh->num_triangles++] = triangle_to_render;
+                // }
+                array_push(render_mesh->triangles, triangle_to_render);
             }
         }
 
         // Sorting painters algorithm, like old days when memory was more
         // expensive
-        if (should_render_ps1()) {
-            qsort(render_mesh->triangles, render_mesh->num_triangles++,
-                  sizeof(render_mesh->triangles), triangle_painter_compare);
-        }
+        // if (should_render_ps1()) {
+        //     qsort(render_mesh->triangles, render_mesh->num_triangles++,
+        //           sizeof(render_mesh->triangles), triangle_painter_compare);
+        // }
     }
 }
 
@@ -282,7 +283,8 @@ static void render(scene_t *scene) {
         texture_t mesh_texture = scene->meshes[m].texture;
         screen_mesh_t *render_mesh = &scene->screen_meshes[m];
 
-        for (int i = 0; i < render_mesh->num_triangles; i++) {
+        int num_triangles = array_size(render_mesh->triangles);
+        for (int i = 0; i < num_triangles; i++) {
             triangle_t triangle = render_mesh->triangles[i];
             // Rasterization method requires vertices to run from top to bottom
             sort_triangle_by_y(&triangle);

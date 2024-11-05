@@ -44,6 +44,11 @@ int array_size(void *array) {
     return size;
 }
 
+void array_reset(void *array) {
+    if (array != NULL)
+        ARRAY_OCCUPIED(array) = 0;
+}
+
 // Free the array and its "header"
 void array_free(void *array) {
     if (array != NULL)

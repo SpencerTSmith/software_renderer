@@ -14,6 +14,7 @@
     } while (0)
 
 void *array_hold(void *array, int count, int element_size);
+void array_reset(void *array);
 int array_size(void *array);
 void array_free(void *array);
 
