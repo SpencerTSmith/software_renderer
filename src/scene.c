@@ -1,5 +1,7 @@
-#include "scene.h"
+#include <time.h>
+
 #include "array.h"
+#include "scene.h"
 
 #define M_PI 3.14159265358979323846
 
@@ -10,11 +12,19 @@ void scene_init(scene_t *scene) {
         .direction = {.x = 0.0f, .y = 0.0f, .z = 1.0f},
     };
 
+    srand(time(NULL));
+
     // load all meshes, and allocate memory for screen meshes
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 5; i++) {
+        float random = rand() / (float)RAND_MAX; // between 0.0 and 1.0
+        random -= 0.5f;                          // between -0.5 and 0.5
+        random *= 5.0f;                          // between -2.5 and 2.5
+
         mesh_t temp_mesh = {0};
-        mesh_init(&temp_mesh, "./assets/f22.obj", "./assets/f22.png", (vec3_t){0.0f, 0.0f, 0.0f},
-                  (vec3_t){1.0f, 1.0f, 1.0f}, (vec3_t){0.0f, 0.0f, 5.0f});
+        vec3_t rotation = {(i * random), (i * random), (i * random)};
+        vec3_t scale = {1.0f, 1.0f, 1.0f};
+        vec3_t position = {(i * random), (i * random), (i * random)};
+        mesh_init(&temp_mesh, "./assets/sphere.obj", "./assets/f22.png", rotation, scale, position);
         array_push(scene->meshes, temp_mesh);
 
         // will hold all projected meshes
@@ -31,8 +41,8 @@ void scene_init(scene_t *scene) {
     float inv_aspect = (float)window_height / window_width;
     float fov_y = M_PI / 3.0f; // radians
     float fov_x = 2 * atanf(tanf(fov_y / 2) * aspect);
-    float z_near = 0.8f;
-    float z_far = 20.0f;
+    float z_near = 1.0f;
+    float z_far = 50.0f;
 
     scene->projection_matrix = mat4_make_perspective(fov_y, inv_aspect, z_near, z_far);
     frustum_planes_init(scene->frustum_planes, fov_x, fov_y, z_near, z_far);

@@ -19,7 +19,6 @@ void load_obj_file_data(mesh_t *mesh, const char *file_name) {
     tex2_t *texcoords = NULL; // dynamic array
 
     while (fgets(line, 512, obj_file)) {
-
         // Vertices
         if (line[0] == 'v' && line[1] == ' ') {
             vec3_t obj_vertex;
