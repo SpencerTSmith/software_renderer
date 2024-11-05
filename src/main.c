@@ -7,6 +7,7 @@
 #include "array.h"
 #include "camera.h"
 #include "clip.h"
+#include "color.h"
 #include "display.h"
 #include "light.h"
 #include "matrix.h"
@@ -303,9 +304,9 @@ static void update(scene_t *scene) {
 
 // Might be thought of as our rasterizer and fragment shader
 static void render(scene_t *scene) {
-    clear_color_buffer(0xFF000000);
+    clear_color_buffer(BLACK);
     clear_w_buffer();
-    draw_grid(0xFF808080);
+    draw_grid(WHITE);
 
     mesh_t mesh = scene->mesh;
     for (int i = 0; i < num_triangles; i++) {
@@ -329,14 +330,14 @@ static void render(scene_t *scene) {
         if (should_render_wire()) {
             draw_triangle(roundf(triangle.points[0].x), roundf(triangle.points[0].y),
                           roundf(triangle.points[1].x), roundf(triangle.points[1].y),
-                          roundf(triangle.points[2].x), roundf(triangle.points[2].y), 0xFF0000FF);
+                          roundf(triangle.points[2].x), roundf(triangle.points[2].y), GREEN);
         }
 
         // Draw Vertices
         if (should_render_verts()) {
             for (int j = 0; j < 3; j++) {
                 draw_rectangle(roundf(triangle.points[j].x) - 3, roundf(triangle.points[j].y) - 3,
-                               6, 6, 0xFF0000FF);
+                               6, 6, GREEN);
             }
         }
 

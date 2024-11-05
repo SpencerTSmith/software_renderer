@@ -180,7 +180,7 @@ static void affine_texture_flat_bottom_triangle(const triangle_t *triangle,
 
         for (int x = roundf(x_start); x <= roundf(x_end); x++) {
             if (texture == NULL) {
-                draw_pixel(x, y, (x % 2 && y % 2) ? 0xFFFF00FF : 0xFF000000);
+                draw_pixel(x, y, (x % 2 && y % 2) ? PURPLE : BLACK);
             } else {
                 draw_affine_texel(x, y, vec4_to_vec2(a), vec4_to_vec2(b), vec4_to_vec2(c), a_uv,
                                   b_uv, c_uv, texture);
@@ -220,7 +220,7 @@ static void affine_texture_flat_top_triangle(const triangle_t *triangle, const t
 
         for (int x = roundf(x_start); x <= roundf(x_end); x++) {
             if (texture == NULL) {
-                draw_pixel(x, y, (x % 2 && y % 2) ? 0xFFFF00FF : 0xFF000000);
+                draw_pixel(x, y, (x % 2 && y % 2) ? PURPLE : BLACK);
             } else {
                 draw_affine_texel(x, y, vec4_to_vec2(a), vec4_to_vec2(b), vec4_to_vec2(c), a_uv,
                                   b_uv, c_uv, texture);
@@ -279,7 +279,7 @@ static void texture_flat_bottom_triangle(const triangle_t *triangle, const textu
 
         for (int x = roundf(x_start); x <= roundf(x_end); x++) {
             if (texture == NULL) {
-                draw_pixel(x, y, (x % 2 && y % 2) ? 0xFFFF00FF : 0xFF000000);
+                draw_pixel(x, y, (x % 2 && y % 2) ? PURPLE : BLACK);
             } else {
                 draw_texel(x, y, a, b, c, a_uv, b_uv, c_uv, texture);
             }
@@ -318,7 +318,7 @@ static void texture_flat_top_triangle(const triangle_t *triangle, const texture_
 
         for (int x = roundf(x_start); x <= roundf(x_end); x++) {
             if (texture == NULL) {
-                draw_pixel(x, y, (x % 2 && y % 2) ? 0xFFFF00FF : 0xFF000000);
+                draw_pixel(x, y, (x % 2 && y % 2) ? PURPLE : BLACK);
             } else {
                 draw_texel(x, y, a, b, c, a_uv, b_uv, c_uv, texture);
             }

@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 
+#include "color.h"
 #include "triangle.h"
 
 // preprocessor function for fast push backs

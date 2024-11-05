@@ -1,6 +1,7 @@
 #ifndef TRIANGLE_H
 #define TRIANGLE_H
 
+#include "color.h"
 #include "texture.h"
 #include "vector.h"
 

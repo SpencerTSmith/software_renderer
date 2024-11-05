@@ -2,15 +2,13 @@
 #define DISPLAY_H
 #include <SDL2/SDL.h>
 
+#include "color.h"
 #include <stdbool.h>
 #include <stdint.h>
 
 #define FPS 60.0f
 #define SECOND 1000.0f
 #define FRAME_TARGET_TIME (SECOND / FPS)
-
-// 0xAABBGGRR
-typedef uint32_t color_t;
 
 // NOTE: might be better to switch this over to a bit mask
 typedef enum {

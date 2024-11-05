@@ -63,7 +63,7 @@ void load_obj_file_data(mesh_t *mesh, const char *file_name) {
                 .a_uv = texcoords[texture_indices[0] - 1],
                 .b_uv = texcoords[texture_indices[1] - 1],
                 .c_uv = texcoords[texture_indices[2] - 1],
-                .color = 0xFFFFFFFF,
+                .color = WHITE,
             };
             array_push(mesh->faces, obj_face);
         }
@@ -88,119 +88,4 @@ void mesh_free(mesh_t *mesh) {
     array_free(mesh->vertices);
     array_free(mesh->faces);
     texture_free(&mesh->texture);
-}
-
-void load_cube_mesh_data(mesh_t *mesh) {
-    // Cube Vertices
-    vec3_t cube_vertices[N_CUBE_VERTICES] = {
-        {.x = -1, .y = -1, .z = -1}, // 1
-        {.x = -1, .y = 1, .z = -1},  // 2
-        {.x = 1, .y = 1, .z = -1},   // 3
-        {.x = 1, .y = -1, .z = -1},  // 4
-        {.x = 1, .y = 1, .z = 1},    // 5
-        {.x = 1, .y = -1, .z = 1},   // 6
-        {.x = -1, .y = 1, .z = 1},   // 7
-        {.x = -1, .y = -1, .z = 1}   // 8
-    };
-
-    // Cube faces, by index of vertices
-    face_t cube_faces[N_CUBE_FACES] = {
-        {.a = 1,
-         .b = 2,
-         .c = 3,
-         .a_uv = {0, 1},
-         .b_uv = {0, 0},
-         .c_uv = {1, 0},
-         .color = 0xFFFFFFFF}, // tri 1 of front
-        {.a = 1,
-         .b = 3,
-         .c = 4,
-         .a_uv = {0, 1},
-         .b_uv = {1, 0},
-         .c_uv = {1, 1},
-         .color = 0xFFFFFFFF}, // tri 2 of front
-
-        {.a = 4,
-         .b = 3,
-         .c = 5,
-         .a_uv = {0, 1},
-         .b_uv = {0, 0},
-         .c_uv = {1, 0},
-         .color = 0xFFFFFFFF}, // tri 1 of east
-        {.a = 4,
-         .b = 5,
-         .c = 6,
-         .a_uv = {0, 1},
-         .b_uv = {1, 0},
-         .c_uv = {1, 1},
-         .color = 0xFFFFFFFF}, // tri 2 of east
-
-        {.a = 6,
-         .b = 5,
-         .c = 7,
-         .a_uv = {0, 1},
-         .b_uv = {0, 0},
-         .c_uv = {1, 0},
-         .color = 0xFFFFFFFF}, // tri 1 of back
-        {.a = 6,
-         .b = 7,
-         .c = 8,
-         .a_uv = {0, 1},
-         .b_uv = {1, 0},
-         .c_uv = {1, 1},
-         .color = 0xFFFFFFFF}, // tri 2 of back
-
-        {.a = 8,
-         .b = 7,
-         .c = 2,
-         .a_uv = {0, 1},
-         .b_uv = {0, 0},
-         .c_uv = {1, 0},
-         .color = 0xFFFFFFFF}, // tri 1 of west
-        {.a = 8,
-         .b = 2,
-         .c = 1,
-         .a_uv = {0, 1},
-         .b_uv = {1, 0},
-         .c_uv = {1, 1},
-         .color = 0xFFFFFFFF}, // tri 2 of west
-
-        {.a = 2,
-         .b = 7,
-         .c = 5,
-         .a_uv = {0, 1},
-         .b_uv = {0, 0},
-         .c_uv = {1, 0},
-         .color = 0xFFFFFFFF}, // tri 1 of top
-        {.a = 2,
-         .b = 5,
-         .c = 3,
-         .a_uv = {0, 1},
-         .b_uv = {1, 0},
-         .c_uv = {1, 1},
-         .color = 0xFFFFFFFF}, // tri 2 of top
-
-        {.a = 8,
-         .b = 1,
-         .c = 4,
-         .a_uv = {0, 1},
-         .b_uv = {0, 0},
-         .c_uv = {1, 0},
-         .color = 0xFFFFFFFF}, // tri 1 of bottom
-        {.a = 8,
-         .b = 4,
-         .c = 6,
-         .a_uv = {0, 1},
-         .b_uv = {1, 0},
-         .c_uv = {1, 1},
-         .color = 0xFFFFFFFF} // tri 2 of bottom
-    };
-    for (int v = 0; v < N_CUBE_VERTICES; v++) {
-        array_push(mesh->vertices, cube_vertices[v]);
-    }
-    for (int f = 0; f < N_CUBE_FACES; f++) {
-        array_push(mesh->faces, cube_faces[f]);
-    }
-
-    load_redbrick_mesh_texture(&mesh->texture);
 }
