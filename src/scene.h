@@ -7,14 +7,26 @@
 #include "matrix.h"
 #include "mesh.h"
 
+#define MAX_TRIANGLES 16384
+
+// collection of transformed and projected triangles, from scene meshes
 typedef struct {
-    mesh_t mesh;
+    triangle_t triangles[MAX_TRIANGLES];
+    int num_triangles;
+} screen_mesh_t;
+
+typedef struct {
+    mesh_t *meshes; // dynamic array of meshes
     light_t light;
+
     camera_t camera;
     mat4_t projection_matrix;
     plane_t frustum_planes[NUM_PLANES];
-    // dynamic array that is filled in the update function
-    triangle_t *triangles_to_render;
+
+    screen_mesh_t *screen_meshes; // dynamic array of screen meshes
 } scene_t;
 
+// Assumes 0 initialization
+void scene_init(scene_t *scene);
+void scene_free(scene_t *scene);
 #endif

@@ -3,9 +3,9 @@
 
 #include <stdint.h>
 
-// 0xAABBGGRR
+// 0xAABBGGRR, little endian
 typedef union {
-    uint32_t argb;
+    uint32_t abgr;
     struct {
         uint8_t r;
         uint8_t g;
@@ -21,5 +21,6 @@ typedef union {
 #define BLUE (color_t)0xFFFF0000
 #define PURPLE (color_t)0xFFFF00FF
 #define BLACK (color_t)0xFF000000
+#define GREY (color_t)0xFF808080
 
 #endif

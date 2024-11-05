@@ -72,20 +72,19 @@ void load_obj_file_data(mesh_t *mesh, const char *file_name) {
     fclose(obj_file);
 }
 
-void mesh_init(mesh_t *mesh, const char *obj_file_name, const char *png_file_name) {
-    mesh->rotation = (vec3_t){0, 0, 0};
-    mesh->scale = (vec3_t){1, 1, 1};
-    mesh->translation = (vec3_t){0, 0, 0};
+void mesh_init(mesh_t *mesh, const char *obj_file_name, const char *png_file_name, vec3_t rotation,
+               vec3_t scale, vec3_t translation) {
+    mesh->rotation = rotation;
+    mesh->scale = scale;
+    mesh->translation = translation;
 
     load_obj_file_data(mesh, obj_file_name);
     load_png_texture_data(&mesh->texture, png_file_name);
 }
 
 void mesh_free(mesh_t *mesh) {
-    mesh->scale = (vec3_t){0, 0, 0};
-    mesh->rotation = (vec3_t){0, 0, 0};
-    mesh->translation = (vec3_t){0, 0, 0};
     array_free(mesh->vertices);
     array_free(mesh->faces);
     texture_free(&mesh->texture);
+    *mesh = (mesh_t){0};
 }

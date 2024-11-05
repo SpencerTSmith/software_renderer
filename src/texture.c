@@ -32,8 +32,10 @@ void load_png_texture_data(texture_t *texture, const char *filename) {
     }
 
     for (int i = 0, j = 0; i < texture_size; i++, j += 4) {
-        texture->pixels[i].argb =
-            (bytes[j + 3] << 24) | (bytes[j + 2] << 16) | (bytes[j + 1] << 8) | bytes[j];
+        texture->pixels[i].r = bytes[j];
+        texture->pixels[i].g = bytes[j + 1];
+        texture->pixels[i].b = bytes[j + 2];
+        texture->pixels[i].a = bytes[j + 3];
     }
 
     stbi_image_free(bytes);

@@ -16,7 +16,8 @@ typedef struct {
     texture_t texture;
 } mesh_t;
 
-void mesh_init(mesh_t *mesh, const char *obj_file_name, const char *png_file_name);
+void mesh_init(mesh_t *mesh, const char *obj_file_name, const char *png_file_name, vec3_t rotation,
+               vec3_t scale, vec3_t translation);
 
 void mesh_free(mesh_t *mesh);
 
