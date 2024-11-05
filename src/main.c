@@ -1,6 +1,5 @@
 #include <math.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_keycode.h>
@@ -12,47 +11,33 @@
 #include "light.h"
 #include "matrix.h"
 #include "mesh.h"
-#include "texture.h"
+#include "scene.h"
 #include "triangle.h"
 #include "vector.h"
 
 #define M_PI 3.14159265358979323846
+#define MAX_TRIANGLES 16384
 
-float delta_time;
-
-#define MAX_TRIANGLES 8192
-triangle_t triangles_to_render[MAX_TRIANGLES];
-int num_triangles = 0;
-
-mat4_t projection_matrix;
-light_t global_light = {.direction = {0, 0, 1}};
+static triangle_t triangles_to_render[MAX_TRIANGLES];
+static int num_triangles = 0;
 
 static bool is_running = false;
 static int previous_frame_time = 0;
+static float delta_time;
 
-// Color buffer initialization, other setups too
-static void setup(void) {
-    // Memory for color buffer
-    color_buffer = (color_t *)malloc(sizeof(color_t) * window_width * window_height);
-    if (!color_buffer) {
-        fprintf(stderr, "Error creating color buffer.\n");
-        is_running = false;
-    }
+// Initialize all scene elements:
+// meshes, lights, the camera, projection matrix, frustum planes
+static void scene_init(scene_t *scene) {
+    scene->light = (light_t){
+        .direction = {.x = 0.0f, .y = 0.0f, .z = 1.0f},
+    };
 
-    // Memory for z buffer
-    w_buffer = (float *)malloc(sizeof(float) * window_width * window_height);
-    if (!w_buffer) {
-        fprintf(stderr, "Error creating depth buffer.\n");
-        is_running = false;
-    }
+    mesh_init(&scene->mesh, "./assets/f22.obj", "./assets/f22.png");
 
-    // SDL texture for rendering buffer from memory
-    color_buffer_texture = SDL_CreateTexture(
-        renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, window_width, window_height);
-    if (!color_buffer) {
-        fprintf(stderr, "Error creating color buffer texture.\n");
-        is_running = false;
-    }
+    camera_init(&scene->camera, (vec3_t){0, 0, 0}, (vec3_t){0, 1, 0}, (vec3_t){0, 0, 1});
+
+    int window_width, window_height;
+    get_window_size(&window_width, &window_height);
 
     float aspect = (float)window_width / window_height;
     float inv_aspect = (float)window_height / window_width;
@@ -60,18 +45,13 @@ static void setup(void) {
     float fov_x = 2 * atanf(tanf(fov_y / 2) * aspect);
     float z_near = 1.0f;
     float z_far = 20.0f;
-    projection_matrix = mat4_make_perspective(fov_y, inv_aspect, z_near, z_far);
-    init_frustum_planes(fov_x, fov_y, z_near, z_far);
 
-    // load_redbrick_mesh_texture();
-    // load_cube_mesh_data();
-
-    load_png_texture_data("./assets/f22.png");
-    load_obj_file_data("./assets/f22.obj");
+    scene->projection_matrix = mat4_make_perspective(fov_y, inv_aspect, z_near, z_far);
+    frustum_planes_init(scene->frustum_planes, fov_x, fov_y, z_near, z_far);
 }
 
 // Poll for input while running
-static void process_input(void) {
+static void process_input(camera_t *camera) {
     // TODO: make input smoother
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -84,80 +64,90 @@ static void process_input(void) {
                 is_running = false;
 
             if (event.key.keysym.sym == SDLK_1)
-                render_mode = RENDER_WIRE_FRAME;
+                set_render_mode(RENDER_WIRE_FRAME);
             if (event.key.keysym.sym == SDLK_2)
-                render_mode = RENDER_WIRE_VERTS;
+                set_render_mode(RENDER_WIRE_VERTS);
             if (event.key.keysym.sym == SDLK_3)
-                render_mode = RENDER_FILL;
+                set_render_mode(RENDER_FILL);
             if (event.key.keysym.sym == SDLK_4)
-                render_mode = RENDER_FILL_WIRE;
+                set_render_mode(RENDER_FILL_WIRE);
             if (event.key.keysym.sym == SDLK_5)
-                render_mode = RENDER_TEXTURE_WIRE;
+                set_render_mode(RENDER_TEXTURE_WIRE);
             if (event.key.keysym.sym == SDLK_6)
-                render_mode = RENDER_TEXTURE;
+                set_render_mode(RENDER_TEXTURE);
 
             // camera y control
             if (event.key.keysym.sym == SDLK_SPACE)
-                camera.position.y += 3.0f * delta_time;
+                camera->position.y += 3.0f * delta_time;
             if (event.key.keysym.sym == SDLK_c)
-                camera.position.y -= 3.0f * delta_time;
+                camera->position.y -= 3.0f * delta_time;
 
             // yaw control
             if (event.key.keysym.sym == SDLK_RIGHT)
-                camera.yaw += 3.0f * delta_time;
+                camera->yaw += 3.0f * delta_time;
             if (event.key.keysym.sym == SDLK_LEFT)
-                camera.yaw -= 3.0f * delta_time;
+                camera->yaw -= 3.0f * delta_time;
 
             // pitch control
             if (event.key.keysym.sym == SDLK_UP)
-                camera.pitch += 3.0f * delta_time;
+                camera->pitch += 3.0f * delta_time;
             if (event.key.keysym.sym == SDLK_DOWN)
-                camera.pitch -= 3.0f * delta_time;
+                camera->pitch -= 3.0f * delta_time;
 
             // forward velocity control
             if (event.key.keysym.sym == SDLK_w) {
-                camera.forward_vel = vec3_mul(camera.forward_direction, 5.0f * delta_time);
-                camera.position = vec3_add(camera.position, camera.forward_vel);
+                camera->forward_vel = vec3_mul(camera->forward_direction, 5.0f * delta_time);
+                camera->position = vec3_add(camera->position, camera->forward_vel);
             }
             if (event.key.keysym.sym == SDLK_s) {
-                camera.forward_vel = vec3_mul(camera.forward_direction, 5.0f * delta_time);
-                camera.position = vec3_sub(camera.position, camera.forward_vel);
+                camera->forward_vel = vec3_mul(camera->forward_direction, 5.0f * delta_time);
+                camera->position = vec3_sub(camera->position, camera->forward_vel);
             }
 
             // right velocity control
             if (event.key.keysym.sym == SDLK_d) {
-                camera.right_vel = vec3_mul(camera.right_direction, 5.0f * delta_time);
-                camera.position = vec3_add(camera.position, camera.right_vel);
+                camera->right_vel = vec3_mul(camera->right_direction, 5.0f * delta_time);
+                camera->position = vec3_add(camera->position, camera->right_vel);
             }
             if (event.key.keysym.sym == SDLK_a) {
-                camera.right_vel = vec3_mul(camera.right_direction, 5.0f * delta_time);
-                camera.position = vec3_sub(camera.position, camera.right_vel);
+                camera->right_vel = vec3_mul(camera->right_direction, 5.0f * delta_time);
+                camera->position = vec3_sub(camera->position, camera->right_vel);
             }
 
             if (event.key.keysym.sym == SDLK_p)
-                render_mode = RENDER_TEXTURE_PS1;
+                set_render_mode(RENDER_TEXTURE_PS1);
 
             if (event.key.keysym.sym == SDLK_b)
-                cull_mode = cull_mode == CULL_BACKFACE ? CULL_NONE : CULL_BACKFACE;
+                switch_cull_mode();
             break;
         }
     }
 }
 
 // Might be thought of as our vertex shader
-static void update(void) {
+static void update(scene_t *scene) {
     // hit goal frame time
     int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks() - previous_frame_time);
     if (time_to_wait > 0 && time_to_wait <= FRAME_TARGET_TIME) {
         SDL_Delay(time_to_wait);
     }
     // factor by which we update data per frame
-    delta_time = (SDL_GetTicks() - previous_frame_time) / 1000.0f;
+    delta_time = (SDL_GetTicks() - previous_frame_time) / SECOND;
 
     previous_frame_time = SDL_GetTicks();
 
+    int window_width, window_height;
+    get_window_size(&window_width, &window_height);
+
+    vec3_t target = camera_update_target(&scene->camera);
+
+    mat4_t view_matrix =
+        mat4_make_look_at(scene->camera.position, target, scene->camera.up_direction);
+
     // Clear our triangles to render
     num_triangles = 0;
+
+    mesh_t mesh = scene->mesh;
 
     // Create transforms
     mesh.rotation.x += 0.f * delta_time;
@@ -179,26 +169,6 @@ static void update(void) {
     world_matrix = mat4_mul_mat4(&rotation_matrix_y, &world_matrix);
     world_matrix = mat4_mul_mat4(&rotation_matrix_x, &world_matrix);
     world_matrix = mat4_mul_mat4(&translation_matrix, &world_matrix);
-
-    // We need a new view matrix every frame
-    vec3_t up_direction = {0, 1, 0};
-    vec3_t target = {0, 0, 1}; // default target, looking into world
-    mat4_t camera_rotation_yaw = mat4_make_rotation_y(camera.yaw);
-    mat4_t camera_rotation_pitch = mat4_make_rotation_x(camera.pitch);
-
-    camera.forward_direction =
-        vec4_to_vec3(mat4_mul_vec4(&camera_rotation_yaw, vec3_to_vec4(target)));
-    camera.forward_direction =
-        vec4_to_vec3(mat4_mul_vec4(&camera_rotation_pitch, vec3_to_vec4(camera.forward_direction)));
-
-    // we can cross the global up vector with the forward direction for right
-    // direction
-    // TODO: can move this out of update to not recalc every frame?
-    camera.right_direction = vec3_cross(up_direction, camera.forward_direction);
-    vec3_normalize(&camera.right_direction);
-
-    target = vec3_add(camera.position, camera.forward_direction);
-    mat4_t view_matrix = mat4_make_look_at(camera.position, target, up_direction);
 
     // Loop faces first, get vertices from faces, project triangle, add to array
     int num_faces = array_size(mesh.faces);
@@ -239,7 +209,7 @@ static void update(void) {
 
         // Skip projecting and pushing this triangle to render, if face is
         // looking away from camera
-        if (cull_mode == CULL_BACKFACE) {
+        if (should_cull_bface()) {
             if (vec3_dot(camera_ray, face_normal) < 0.0f)
                 continue;
         }
@@ -260,7 +230,7 @@ static void update(void) {
                 },
             .num_vertices = 3,
         };
-        clip_polygon(&clip_poly);
+        clip_polygon_to_planes(scene->frustum_planes, &clip_poly);
 
         // Back to triangles
         triangle_t clipped_tris[MAX_NUM_POLY_TRIS];
@@ -276,7 +246,7 @@ static void update(void) {
             for (int j = 0; j < 3; j++) {
                 // Project to screen space, also performs perspective divide
                 projected_vertices[j] =
-                    mat4_mul_vec4_project(&projection_matrix, clipped_triangle.points[j]);
+                    mat4_mul_vec4_project(&scene->projection_matrix, clipped_triangle.points[j]);
 
                 // Scale it up
                 projected_vertices[j].x *= (window_width / 2.f);
@@ -290,10 +260,10 @@ static void update(void) {
             }
 
             // Flat shading
-            vec3_normalize(&global_light.direction);
+            vec3_normalize(&scene->light.direction);
             vec3_normalize(&face_normal);
             // Negative because pointing at the light means more light
-            float light_alignment = -vec3_dot(global_light.direction, face_normal);
+            float light_alignment = -vec3_dot(scene->light.direction, face_normal);
             color_t shaded_color = light_apply_intensity(mesh.faces[i].color, light_alignment);
 
             // Not necessary to divide by 3 here, does not change relative ordering
@@ -325,45 +295,45 @@ static void update(void) {
 
     // Sorting painters algorithm, like old days when memory was more
     // expensive
-    if (render_mode == RENDER_TEXTURE_PS1) {
+    if (should_render_ps1()) {
         qsort(triangles_to_render, num_triangles, sizeof(*triangles_to_render),
               triangle_painter_compare);
     }
 }
 
 // Might be thought of as our rasterizer and fragment shader
-static void render(void) {
-    SDL_RenderClear(renderer);
-
+static void render(scene_t *scene) {
+    clear_color_buffer(0xFF000000);
+    clear_w_buffer();
     draw_grid(0xFF808080);
 
+    mesh_t mesh = scene->mesh;
     for (int i = 0; i < num_triangles; i++) {
         triangle_t triangle = triangles_to_render[i];
-        sort_triangle_by_y(&triangle); // Rasterization method requires vertices
-                                       // to run from top to bottom
+        // Rasterization method requires vertices to run from top to bottom
+        sort_triangle_by_y(&triangle);
+
+        // FIXME: passing triangle by reference causes some to not be rendered
 
         // Draw Textured Triangles
-        if (render_mode == RENDER_TEXTURE || render_mode == RENDER_TEXTURE_WIRE) {
-            draw_textured_triangle(triangle,
-                                   mesh_texture); // passing triangle by reference
-                                                  // causes some to not be rendered
+        if (should_render_texture()) {
+            draw_textured_triangle(triangle, &mesh.texture);
         }
 
         // Draw Filled Triangles
-        if (render_mode == RENDER_FILL || render_mode == RENDER_FILL_WIRE) {
+        if (should_render_fill()) {
             draw_filled_triangle(triangle);
         }
 
         // Draw Unfilled Triangles
-        if (render_mode == RENDER_WIRE_FRAME || render_mode == RENDER_WIRE_VERTS ||
-            render_mode == RENDER_FILL_WIRE || render_mode == RENDER_TEXTURE_WIRE) {
+        if (should_render_wire()) {
             draw_triangle(roundf(triangle.points[0].x), roundf(triangle.points[0].y),
                           roundf(triangle.points[1].x), roundf(triangle.points[1].y),
                           roundf(triangle.points[2].x), roundf(triangle.points[2].y), 0xFF0000FF);
         }
 
         // Draw Vertices
-        if (render_mode == RENDER_WIRE_VERTS) {
+        if (should_render_verts()) {
             for (int j = 0; j < 3; j++) {
                 draw_rectangle(roundf(triangle.points[j].x) - 3, roundf(triangle.points[j].y) - 3,
                                6, 6, 0xFF0000FF);
@@ -371,40 +341,34 @@ static void render(void) {
         }
 
         // SECRET!
-        if (render_mode == RENDER_TEXTURE_PS1) {
-            draw_affine_textured_triangle(triangle, mesh_texture);
+        if (should_render_ps1()) {
+            draw_affine_textured_triangle(triangle, &mesh.texture);
         }
     }
 
     render_color_buffer();
-
-    clear_color_buffer(0xFF000000);
-    clear_w_buffer();
-
-    SDL_RenderPresent(renderer);
 }
 
-static void free_resources(void) {
-    free(color_buffer);
-    free(w_buffer);
-    texture_free(mesh_texture);
-    array_free(mesh.faces);
-    array_free(mesh.vertices);
+static void scene_free(scene_t *scene) {
+    mesh_free(&scene->mesh);
+    scene->light = (light_t){0};
+    scene->camera = (camera_t){0};
 }
 
 int main(int argc, char *args[]) {
-    is_running = initialize_window();
+    is_running = window_init();
 
-    setup();
+    scene_t scene = {0};
+    scene_init(&scene);
 
     while (is_running) {
-        process_input();
-        update();
-        render();
+        process_input(&scene.camera);
+        update(&scene);
+        render(&scene);
     }
 
-    destroy_window();
-    free_resources();
+    scene_free(&scene);
+    window_free();
 
     return 0;
 }

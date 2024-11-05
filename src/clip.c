@@ -5,32 +5,31 @@
 #include <stddef.h>
 #include <string.h>
 
-plane_t frustum_planes[NUM_PLANES];
-
-void init_frustum_planes(float fov_x, float fov_y, float z_near, float z_far) {
+void frustum_planes_init(plane_t planes[NUM_PLANES], float fov_x, float fov_y, float z_near,
+                         float z_far) {
     float cos_half_fov_x = cosf(fov_x / 2);
     float sin_half_fov_x = sinf(fov_x / 2);
     float cos_half_fov_y = cosf(fov_y / 2);
     float sin_half_fov_y = sinf(fov_y / 2);
     vec3_t origin = {0, 0, 0};
 
-    frustum_planes[LEFT_FRUSTUM].point = origin;
-    frustum_planes[LEFT_FRUSTUM].normal = (vec3_t){cos_half_fov_x, 0, sin_half_fov_x};
+    planes[LEFT_FRUSTUM].point = origin;
+    planes[LEFT_FRUSTUM].normal = (vec3_t){cos_half_fov_x, 0, sin_half_fov_x};
 
-    frustum_planes[RIGHT_FRUSTUM].point = origin;
-    frustum_planes[RIGHT_FRUSTUM].normal = (vec3_t){-cos_half_fov_x, 0, sin_half_fov_x};
+    planes[RIGHT_FRUSTUM].point = origin;
+    planes[RIGHT_FRUSTUM].normal = (vec3_t){-cos_half_fov_x, 0, sin_half_fov_x};
 
-    frustum_planes[TOP_FRUSTUM].point = origin;
-    frustum_planes[TOP_FRUSTUM].normal = (vec3_t){0, -cos_half_fov_y, sin_half_fov_y};
+    planes[TOP_FRUSTUM].point = origin;
+    planes[TOP_FRUSTUM].normal = (vec3_t){0, -cos_half_fov_y, sin_half_fov_y};
 
-    frustum_planes[BOTTOM_FRUSTUM].point = origin;
-    frustum_planes[BOTTOM_FRUSTUM].normal = (vec3_t){0, cos_half_fov_y, sin_half_fov_y};
+    planes[BOTTOM_FRUSTUM].point = origin;
+    planes[BOTTOM_FRUSTUM].normal = (vec3_t){0, cos_half_fov_y, sin_half_fov_y};
 
-    frustum_planes[NEAR_FRUSTUM].point = (vec3_t){0, 0, z_near};
-    frustum_planes[NEAR_FRUSTUM].normal = (vec3_t){0, 0, 1};
+    planes[NEAR_FRUSTUM].point = (vec3_t){0, 0, z_near};
+    planes[NEAR_FRUSTUM].normal = (vec3_t){0, 0, 1};
 
-    frustum_planes[FAR_FRUSTUM].point = (vec3_t){0, 0, z_far};
-    frustum_planes[FAR_FRUSTUM].normal = (vec3_t){0, 0, -1};
+    planes[FAR_FRUSTUM].point = (vec3_t){0, 0, z_far};
+    planes[FAR_FRUSTUM].normal = (vec3_t){0, 0, -1};
 }
 
 static float lerp_float(float a, float b, float lerp_factor) {
@@ -90,16 +89,16 @@ static void clip_against_plane(polygon_t *polygon, const plane_t *frust_plane) {
     polygon->num_vertices = num_in;
 }
 
-void clip_polygon(polygon_t *polygon) {
-    clip_against_plane(polygon, &frustum_planes[LEFT_FRUSTUM]);
-    clip_against_plane(polygon, &frustum_planes[RIGHT_FRUSTUM]);
-    clip_against_plane(polygon, &frustum_planes[TOP_FRUSTUM]);
-    clip_against_plane(polygon, &frustum_planes[BOTTOM_FRUSTUM]);
-    clip_against_plane(polygon, &frustum_planes[NEAR_FRUSTUM]);
-    clip_against_plane(polygon, &frustum_planes[FAR_FRUSTUM]);
+void clip_polygon_to_planes(const plane_t planes[NUM_PLANES], polygon_t *polygon) {
+    clip_against_plane(polygon, &planes[LEFT_FRUSTUM]);
+    clip_against_plane(polygon, &planes[RIGHT_FRUSTUM]);
+    clip_against_plane(polygon, &planes[TOP_FRUSTUM]);
+    clip_against_plane(polygon, &planes[BOTTOM_FRUSTUM]);
+    clip_against_plane(polygon, &planes[NEAR_FRUSTUM]);
+    clip_against_plane(polygon, &planes[FAR_FRUSTUM]);
 }
 
-int polygon_to_tris(polygon_t *polygon, triangle_t triangles[MAX_NUM_POLY_TRIS]) {
+int polygon_to_tris(const polygon_t *polygon, triangle_t triangles[MAX_NUM_POLY_TRIS]) {
     // can make (num_vert - 2) tris from any poly
     int num_triangles = polygon->num_vertices - 2;
     for (int i = 0; i < num_triangles; i++) {

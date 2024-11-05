@@ -5,13 +5,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#define FPS 60
-#define FRAME_TARGET_TIME (1000 / FPS)
+#define FPS 60.0f
+#define SECOND 1000.0f
+#define FRAME_TARGET_TIME (SECOND / FPS)
 
 // 0xAABBGGRR
 typedef uint32_t color_t;
 
-extern enum render_mode {
+// NOTE: might be better to switch this over to a bit mask
+typedef enum {
     RENDER_WIRE_FRAME,
     RENDER_WIRE_VERTS,
     RENDER_FILL,
@@ -19,22 +21,16 @@ extern enum render_mode {
     RENDER_TEXTURE,
     RENDER_TEXTURE_WIRE,
     RENDER_TEXTURE_PS1
-} render_mode;
+} render_mode_e;
 
-extern enum cull_mode { CULL_BACKFACE, CULL_NONE } cull_mode;
-
-extern SDL_Window *window;
-extern SDL_Renderer *renderer;
-extern int window_width;
-extern int window_height;
-
-extern color_t *color_buffer;
-extern float *w_buffer;
-extern SDL_Texture *color_buffer_texture;
+typedef enum { CULL_BACKFACE, CULL_NONE } cull_mode_e;
 
 // initialize all SDL components for drawing on screen.
-bool initialize_window(void);
-void destroy_window(void);
+bool window_init(void);
+
+void get_window_size(int *width, int *height);
+// free all resources related to window
+void window_free(void);
 
 void draw_pixel(int x, int y, color_t color);
 void draw_line(int x0, int y0, int x1, int y1, color_t color);
@@ -42,7 +38,20 @@ void draw_grid(color_t color);
 void draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2, color_t color);
 void draw_rectangle(int xpos, int ypos, int width, int height, color_t color);
 
-// draw color buffer to SDL texture
+float w_buffer_at(int x, int y);
+void update_w_buffer(int x, int y, float w);
+
+void set_render_mode(render_mode_e mode);
+void switch_cull_mode();
+
+bool should_cull_bface();
+bool should_render_wire();
+bool should_render_fill();
+bool should_render_verts();
+bool should_render_texture();
+bool should_render_ps1();
+
+// draw color buffer to SDL texture, show the texture
 void render_color_buffer(void);
 
 void clear_color_buffer(color_t color);

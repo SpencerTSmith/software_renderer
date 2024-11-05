@@ -15,7 +15,7 @@ typedef enum {
     NEAR_FRUSTUM,
     FAR_FRUSTUM,
     NUM_PLANES
-} frustum_side;
+} frustum_side_e;
 
 typedef struct {
     vec3_t point;
@@ -28,12 +28,13 @@ typedef struct {
     int num_vertices;
 } polygon_t;
 
-void init_frustum_planes(float fovy, float fovx, float z_near, float z_far);
+void frustum_planes_init(plane_t planes[NUM_PLANES], float fov_x, float fov_y, float z_near,
+                         float z_far);
 
-// will also adjust texture coords
-void clip_polygon(polygon_t *polygon);
+// Will also adjust texture coords, mutates the polygon passed in
+void clip_polygon_to_planes(const plane_t planes[NUM_PLANES], polygon_t *polygon);
 
 // Returns number of triangles created, outputs triangles into array
-int polygon_to_tris(polygon_t *polygon, triangle_t triangles[MAX_NUM_POLY_TRIS]);
+int polygon_to_tris(const polygon_t *polygon, triangle_t triangles[MAX_NUM_POLY_TRIS]);
 
 #endif

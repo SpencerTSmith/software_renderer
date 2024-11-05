@@ -1,6 +1,7 @@
 #ifndef MESH_H
 #define MESH_H
 
+#include "texture.h"
 #include "triangle.h"
 #include "vector.h"
 
@@ -9,21 +10,14 @@
 
 // Dynamic size mesh
 typedef struct {
-	vec3_t *vertices;	// dynamic array of vertices
-	face_t *faces;		// dynamic array of faces
-	vec3_t rotation;	// x,y,z rotation
-	vec3_t scale;		// x,y,z scale
-	vec3_t translation; // x,y,z translation
+    vec3_t rotation, scale, translation;
+    vec3_t *vertices; // dynamic array of vertices
+    face_t *faces;    // dynamic array of faces
+    texture_t texture;
 } mesh_t;
 
-extern mesh_t mesh;
+void mesh_init(mesh_t *mesh, const char *obj_file_name, const char *png_file_name);
 
-// Read contents of obj file into mesh
-void load_obj_file_data(const char *file_name);
-
-void load_cube_mesh_data(void);
-
-extern vec3_t cube_vertices[N_CUBE_VERTICES];
-extern face_t cube_faces[N_CUBE_FACES];
+void mesh_free(mesh_t *mesh);
 
 #endif

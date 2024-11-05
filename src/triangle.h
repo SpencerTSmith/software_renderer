@@ -24,7 +24,7 @@ typedef struct {
     union {
         vec4_t points[3];
         struct {
-            vec4_t a, b, c;
+            vec4_t a_pos, b_pos, c_pos;
         };
     };
     union {
@@ -43,8 +43,8 @@ void sort_triangle_by_y(triangle_t *triangle);
 
 void draw_filled_triangle(triangle_t triangle);
 
-void draw_affine_textured_triangle(triangle_t triangle, color_t *texture);
+void draw_affine_textured_triangle(triangle_t triangle, const texture_t *texture);
 
-void draw_textured_triangle(triangle_t triangle, color_t *texture);
+void draw_textured_triangle(triangle_t triangle, const texture_t *texture);
 
 #endif
