@@ -27,10 +27,6 @@ void scene_init(scene_t *scene) {
         vec3_t position = {(i * random), (i * random), (i * random)};
         mesh_init(&temp_mesh, "./assets/sphere.obj", "./assets/f22.png", rotation, scale, position);
         array_push(scene->meshes, temp_mesh);
-
-        // will hold all projected meshes
-        screen_mesh_t temp_screen_mesh = {0};
-        array_push(scene->screen_meshes, temp_screen_mesh);
     }
 
     camera_init(&scene->camera, (vec3_t){0, 0, 0}, (vec3_t){0, 1, 0}, (vec3_t){0, 0, 1});
@@ -54,10 +50,7 @@ void scene_free(scene_t *scene) {
     int num_meshes = array_size(scene->meshes);
     for (int i = 0; i < num_meshes; i++) {
         mesh_free(&scene->meshes[i]);
-        array_free(scene->screen_meshes[i].triangles);
     }
-    // free dynamic array of screen_meshes
-    array_free(scene->screen_meshes);
 
     // free the dynamic list of meshes
     array_free(scene->meshes);

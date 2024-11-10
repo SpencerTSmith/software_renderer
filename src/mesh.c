@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void load_obj_file_data(mesh_t *mesh, const char *file_name) {
+static void load_obj_file_data(mesh_t *mesh, const char *file_name) {
     FILE *obj_file = fopen(file_name, "r");
 
     if (obj_file == NULL) {
@@ -79,11 +79,19 @@ void mesh_init(mesh_t *mesh, const char *obj_file_name, const char *png_file_nam
 
     load_obj_file_data(mesh, obj_file_name);
     load_png_texture_data(&mesh->texture, png_file_name);
+
+    int num_faces = array_size(mesh->faces);
+    // we'll allocate an array of all the faces in a mesh, most likely it won't need it all but just
+    // to be safe it should create a bit of a buffer from reallocating if we make new triangles when
+    // clipping
+    mesh->raster_tris = array_hold(mesh->raster_tris, num_faces, sizeof(triangle_t));
 }
 
 void mesh_free(mesh_t *mesh) {
     array_free(mesh->vertices);
     array_free(mesh->faces);
     texture_free(&mesh->texture);
+    array_free(mesh->raster_tris);
+
     *mesh = (mesh_t){0};
 }

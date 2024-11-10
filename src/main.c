@@ -127,10 +127,9 @@ static void update(scene_t *scene) {
     for (int m = 0; m < num_meshes; m++) {
         // get pointers since we are going to modify these
         mesh_t *mesh = &scene->meshes[m];
-        screen_mesh_t *render_mesh = &scene->screen_meshes[m];
 
         // reset the triangles each frame
-        array_reset(render_mesh->triangles);
+        array_reset(mesh->raster_tris);
 
         mat4_t scale_matrix = mat4_make_scale(mesh->scale.x, mesh->scale.y, mesh->scale.z);
         mat4_t rotation_matrix_x = mat4_make_rotation_x(mesh->rotation.x);
@@ -258,16 +257,15 @@ static void update(scene_t *scene) {
                     .avg_depth = avg_z,
                 };
 
-                array_push(render_mesh->triangles, triangle_to_render);
-                render_mesh->texture = mesh->texture;
+                array_push(mesh->raster_tris, triangle_to_render);
             }
         }
 
         // Sorting painters algorithm, like old days when memory was more
         // expensive
         if (should_render_ps1()) {
-            qsort(render_mesh->triangles, array_size(render_mesh->triangles),
-                  sizeof(*(render_mesh->triangles)), triangle_painter_compare);
+            qsort(mesh->raster_tris, array_size(mesh->raster_tris), sizeof(*(mesh->raster_tris)),
+                  triangle_painter_compare);
         }
     }
 }
@@ -280,11 +278,11 @@ static void render(scene_t *scene) {
 
     int num_meshes = array_size(scene->meshes);
     for (int m = 0; m < num_meshes; m++) {
-        screen_mesh_t *render_mesh = &scene->screen_meshes[m];
+        mesh_t *mesh = &scene->meshes[m];
 
-        int num_triangles = array_size(render_mesh->triangles);
+        int num_triangles = array_size(mesh->raster_tris);
         for (int i = 0; i < num_triangles; i++) {
-            triangle_t triangle = render_mesh->triangles[i];
+            triangle_t triangle = mesh->raster_tris[i];
             // Rasterization method requires vertices to run from top to bottom
             sort_triangle_by_y(&triangle);
 
@@ -292,7 +290,7 @@ static void render(scene_t *scene) {
 
             // Draw Textured Triangles
             if (should_render_texture()) {
-                draw_textured_triangle(triangle, &render_mesh->texture);
+                draw_textured_triangle(triangle, &mesh->texture);
             }
 
             // Draw Filled Triangles
@@ -317,7 +315,7 @@ static void render(scene_t *scene) {
 
             // SECRET!
             if (should_render_ps1()) {
-                draw_affine_textured_triangle(triangle, &render_mesh->texture);
+                draw_affine_textured_triangle(triangle, &mesh->texture);
             }
         }
     }

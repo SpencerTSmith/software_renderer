@@ -13,8 +13,8 @@ void *array_hold(void *array, int count, int element_size) {
     int header_size = sizeof(int) * 2;
 
     if (array == NULL) {
-        int adjusted_size = header_size + (count * element_size);
-        int *result = (int *)malloc(adjusted_size);
+        int adjusted_size = header_size + count;
+        int *result = (int *)calloc(adjusted_size, element_size);
 
         result[0] = count; // capacity
         result[1] = count; // actual count

@@ -3,7 +3,7 @@
 #include <SDL2/SDL_video.h>
 #include <stdio.h>
 
-#define PIXEL_SCALING_FACTOR 0.5f
+#define PIXEL_SCALING_FACTOR 2
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
@@ -29,8 +29,8 @@ bool window_init(void) {
 
     int full_window_width = display_mode.w;
     int full_window_height = display_mode.h;
-    window_width = full_window_width * PIXEL_SCALING_FACTOR;
-    window_height = full_window_height * PIXEL_SCALING_FACTOR;
+    window_width = full_window_width / PIXEL_SCALING_FACTOR;
+    window_height = full_window_height / PIXEL_SCALING_FACTOR;
 
     window = SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                               full_window_width, full_window_height, SDL_WINDOW_BORDERLESS);

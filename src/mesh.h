@@ -14,6 +14,7 @@ typedef struct {
     vec3_t *vertices; // dynamic array of vertices
     face_t *faces;    // dynamic array of faces
     texture_t texture;
+    triangle_t *raster_tris; // dynamic array of triangles to rasterize, should start as zero
 } mesh_t;
 
 void mesh_init(mesh_t *mesh, const char *obj_file_name, const char *png_file_name, vec3_t rotation,

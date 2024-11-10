@@ -84,17 +84,20 @@ static void fill_flat_bottom_triangle(const triangle_t *triangle) {
 
     float dx_1 = roundf(b.x) - roundf(a.x);
     float dy_1 = roundf(b.y) - roundf(a.y);
-    float xstep_1 = dx_1 / dy_1; // inverse slope, for every 1 increment in y,
-                                 // how much to step in x?
+    // inverse slope, for every 1 increment in y, how much to step in x?
+    float xstep_1 = dx_1 / dy_1;
 
     float dx_2 = roundf(c.x) - roundf(a.x);
     float dy_2 = roundf(c.y) - roundf(a.y);
-    float xstep_2 = dx_2 / dy_2; // inverse slope, for every 1 increment in y,
-                                 // how much to step in x?
+    // inverse slope, for every 1 increment in y, how much to step in x?
+    float xstep_2 = dx_2 / dy_2;
 
-    float x_start = roundf(a.x);
+    int y_start = roundf(a.y);
+    int y_end = roundf(b.y);
+
+    float x_start = a.x;
     float x_end = x_start;
-    for (int y = roundf(a.y); y <= roundf(b.y); y++) {
+    for (int y = y_start; y <= y_end; y++) {
         // If we're rotated the other way, lets swap so we are still drawing
         // left to right
         if (x_end < x_start) {
@@ -102,7 +105,10 @@ static void fill_flat_bottom_triangle(const triangle_t *triangle) {
             float_swap(&xstep_1, &xstep_2);
         }
 
-        for (int x = roundf(x_start); x <= roundf(x_end); x++) {
+        // top-left raster rule
+        int x_left = floorf(x_start);
+        int x_right = ceilf(x_end) - 1;
+        for (int x = x_left; x <= x_right; x++) {
             draw_w_pixel(x, y, a, b, c, triangle->color);
         }
 
@@ -124,16 +130,22 @@ static void fill_flat_top_triangle(const triangle_t *triangle) {
     float dy_2 = roundf(c.y) - roundf(a.y);
     float xstep_2 = dx_2 / dy_2;
 
-    float x_start = roundf(c.x);
+    int y_start = roundf(c.y);
+    int y_end = roundf(b.y);
+
+    float x_start = c.x;
     float x_end = x_start;
-    for (int y = roundf(c.y); y >= roundf(b.y); y--) {
+    for (int y = y_start; y >= y_end; y--) {
         // If we're rotated the other way, lets swap so we are still drawing left to right
         if (x_end < x_start) {
             float_swap(&x_start, &x_end);
             float_swap(&xstep_1, &xstep_2);
         }
 
-        for (int x = roundf(x_start); x <= roundf(x_end); x++) {
+        // top-left raster rule
+        int x_left = floorf(x_start);
+        int x_right = ceilf(x_end) - 1;
+        for (int x = x_left; x <= x_right; x++) {
             draw_w_pixel(x, y, a, b, c, triangle->color);
         }
 
