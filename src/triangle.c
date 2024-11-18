@@ -291,9 +291,12 @@ static void texture_flat_bottom_triangle(const triangle_t *triangle, const textu
     // inverse slope, for every 1 increment in y, how much to step in x?
     float xstep_2 = dx_2 / dy_2;
 
+    int y_start = roundf(a.y);
+    int y_end = roundf(b.y);
+
     float x_start = roundf(a.x);
     float x_end = x_start;
-    for (int y = roundf(a.y); y <= roundf(b.y); y++) {
+    for (int y = y_start; y <= y_end; y++) {
         // If we're rotated the other way, lets swap so we are still drawing left to right
         if (x_end < x_start) {
             float_swap(&x_start, &x_end);
@@ -330,9 +333,12 @@ static void texture_flat_top_triangle(const triangle_t *triangle, const texture_
     float dy_2 = roundf(c.y) - roundf(a.y);
     float xstep_2 = dx_2 / dy_2;
 
+    int y_start = roundf(c.y);
+    int y_end = roundf(b.y);
+
     float x_start = roundf(c.x);
     float x_end = x_start;
-    for (int y = roundf(c.y); y >= roundf(b.y); y--) {
+    for (int y = y_start; y >= y_end; y--) {
         // If we're rotated the other way, lets swap so we are still drawing left to right
         if (x_end < x_start) {
             float_swap(&x_start, &x_end);

@@ -9,9 +9,9 @@
 #include "vector.h"
 
 void texture_free(texture_t *texture) {
-    texture->width = 0;
-    texture->height = 0;
     free(texture->pixels);
+
+    memset(texture, 0, sizeof(texture_t));
 }
 
 void load_png_texture_data(texture_t *texture, const char *filename) {
@@ -117,8 +117,10 @@ void draw_texel(int x, int y, vec4_t a, vec4_t b, vec4_t c, tex2_t a_uv, tex2_t 
     interp_uv.v /= interp_inv_w;
 
     // Modulo is hacky clamp
-    int tex_x = (int)fabsf(roundf(interp_uv.u * texture->width)) % texture->width;
-    int tex_y = (int)fabsf(roundf(interp_uv.v * texture->height)) % texture->height;
+    int tex_x = (int)fabsf(roundf(interp_uv.u * texture->width));
+    tex_x = tex_x >= texture->width ? 0 : tex_x;
+    int tex_y = (int)fabsf(roundf(interp_uv.v * texture->height));
+    tex_y = tex_y >= texture->height ? 0 : tex_y;
 
     int index = tex_y * texture->width + tex_x;
 

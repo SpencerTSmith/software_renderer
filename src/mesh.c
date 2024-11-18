@@ -93,5 +93,5 @@ void mesh_free(mesh_t *mesh) {
     texture_free(&mesh->texture);
     array_free(mesh->raster_tris);
 
-    *mesh = (mesh_t){0};
+    memset(mesh, 0, sizeof(mesh_t));
 }

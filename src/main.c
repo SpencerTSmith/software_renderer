@@ -42,9 +42,9 @@ static void process_input(camera_t *camera) {
             if (event.key.keysym.sym == SDLK_4)
                 set_render_mode(RENDER_FILL_WIRE);
             if (event.key.keysym.sym == SDLK_5)
-                set_render_mode(RENDER_TEXTURE_WIRE);
-            if (event.key.keysym.sym == SDLK_6)
                 set_render_mode(RENDER_TEXTURE);
+            if (event.key.keysym.sym == SDLK_6)
+                set_render_mode(RENDER_TEXTURE_WIRE);
 
             // camera y control
             if (event.key.keysym.sym == SDLK_SPACE)

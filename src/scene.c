@@ -4,7 +4,6 @@
 #include "scene.h"
 
 #define M_PI 3.14159265358979323846
-#define AVG_N_TRIANGLES 4192
 
 // Initialize all scene elements:
 // meshes, lights, the camera, projection matrix, frustum planes
@@ -25,7 +24,7 @@ void scene_init(scene_t *scene) {
         vec3_t rotation = {(i * random), (i * random), (i * random)};
         vec3_t scale = {1.0f, 1.0f, 1.0f};
         vec3_t position = {(i * random), (i * random), (i * random)};
-        mesh_init(&temp_mesh, "./assets/sphere.obj", "./assets/f22.png", rotation, scale, position);
+        mesh_init(&temp_mesh, "./assets/crab.obj", "./assets/crab.png", rotation, scale, position);
         array_push(scene->meshes, temp_mesh);
     }
 
@@ -36,7 +35,7 @@ void scene_init(scene_t *scene) {
 
     float aspect = (float)window_width / window_height;
     float inv_aspect = (float)window_height / window_width;
-    float fov_y = M_PI / 3.0f; // radians
+    float fov_y = M_PI / 2.0f; // radians
     float fov_x = 2 * atanf(tanf(fov_y / 2) * aspect);
     float z_near = 1.0f;
     float z_far = 50.0f;
@@ -55,4 +54,6 @@ void scene_free(scene_t *scene) {
     // free the dynamic list of meshes
     array_free(scene->meshes);
     *scene = (scene_t){0};
+
+    memset(scene, 0, sizeof(scene_t));
 }
