@@ -118,9 +118,9 @@ void draw_texel(int x, int y, vec4_t a, vec4_t b, vec4_t c, tex2_t a_uv, tex2_t 
 
     // Modulo is hacky clamp
     int tex_x = (int)fabsf(roundf(interp_uv.u * texture->width));
-    tex_x = tex_x >= texture->width ? 0 : tex_x;
+    tex_x = tex_x % texture->width;
     int tex_y = (int)fabsf(roundf(interp_uv.v * texture->height));
-    tex_y = tex_y >= texture->height ? 0 : tex_y;
+    tex_y = tex_y % texture->height;
 
     int index = tex_y * texture->width + tex_x;
 

@@ -19,7 +19,7 @@ or
 ```
 make fast
 ```
-for optimized version
+for compiler optimizations on
 
 ## Controls
 - w, a, s, d for movement
