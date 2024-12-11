@@ -11,7 +11,7 @@ Little software renderer, from scratch with minimal dependencies (SDL2 - for ren
 - Fully functioned camera, including freelook and 6-directional movement
 
 ### Video Demonstration
-[demo](./demo/video.mp4)
+[![Demo](https://img.youtube.com/vi/urqiXzyUDd0/0.jpg)](https://www.youtube.com/watch?v=urqiXzyUDd0)
 
 ## Build
 Need SDL2 and stb_image
