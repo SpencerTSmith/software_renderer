@@ -10,6 +10,9 @@ Little software renderer, from scratch with minimal dependencies (SDL2 - for ren
 - Perspective correct texture interpolation (Barycentric Weight)
 - Fully functioned camera, including freelook and 6-directional movement
 
+### Video Demonstration
+[demo](./demo/video.mp4)
+
 ## Build
 Need SDL2 and stb_image
 ```
