@@ -6,7 +6,7 @@ Little software renderer, from scratch with minimal dependencies (SDL2 - for ren
 - Custom linear algebra functions
 - Backface-culling
 - Frustum clipping
-- Flat shading for untextured objects
+- Flat (Diffuse/Lambertian) shading for untextured objects
 - Perspective correct texture interpolation (Barycentric Weight)
 - Fully functioned camera, including freelook and 6-directional movement
 
